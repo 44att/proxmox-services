@@ -2,8 +2,8 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/telmate/proxmox" {
-  version     = "2.9.11"
-  constraints = "2.9.11"
+  version     = "2.9.13"
+  constraints = "2.9.13"
   hashes = [
     "h1:RKM2pvHNJrQKcMD7omaPiM099vWGgDnnZqn1kGknYXU=",
     "h1:vT/Wsl/uK1OnUvGuIcPMeM56m0gX+1asOXDPHJ8FDfc=",
