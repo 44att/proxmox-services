@@ -1,0 +1,115 @@
+---
+- name: Create Homepage group
+  group:
+    name: homepage
+    state: present
+
+- name: Create Homepage user
+  user:
+    name: homepage
+    groups: homepage
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+      - inotify-tools
+    state: latest
+
+- name: Create Homepage directory if it does not exist
+  file:
+    path: /opt/homepage
+    state: directory
+    mode: 0755
+
+- name: Add Homepage directory as safe in git config
+  shell:
+    cmd: git config --global --add safe.directory /opt/homepage
+
+- name: Install the gpg keys for nodejs LTS
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+    
+- name: Add the nodejs LTS repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install nodejs package
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install pnpm
+  shell:
+    cmd: corepack enable; corepack prepare pnpm@latest --activate
+
+- name: Download Homepage
+  git:
+    repo: https://github.com/benphelps/homepage.git
+    dest: /opt/homepage
+    depth: 1
+    force: true
+    version: main
+
+- name: Create config directory
+  file:
+    path: /opt/homepage/config
+    state: directory
+    mode: 0755
+
+- name: Install Homepage
+  shell:
+    chdir: /opt/homepage
+    cmd: pnpm install; pnpm build
+
+- name: Copy config files from persistant storage
+  copy:
+    src: /Homepage-data/
+    dest: /opt/homepage/config
+    mode: 0755
+    remote_src: true
+    force: true
+
+- name: Recursively change ownership of Homepage directory
+  file:
+    path: /opt/homepage/
+    state: directory
+    recurse: true
+    owner: homepage
+    group: homepage
+
+- name: Copy shell script to sync config files
+  copy:
+    src: sync-config.sh
+    dest: /root/sync-config.sh
+    mode: +x
+
+- name: Copy config sync systemd service file
+  copy:
+    src: sync-config.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Config Sync
+
+- name: Copy Homepage systemd service file
+  copy:
+    src: homepage.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Homepage

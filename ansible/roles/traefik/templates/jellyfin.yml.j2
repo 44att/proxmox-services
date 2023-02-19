@@ -1,0 +1,21 @@
+---
+http:
+  routers:
+    to-jellyfin:
+      rule: "Host(`media.home.lan`)"
+      service: jellyfin
+    to-jellyfin-secure:
+      rule: "Host(`media.{{ external_domain }}`)"
+      service: jellyfin
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    jellyfin:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.30:8096

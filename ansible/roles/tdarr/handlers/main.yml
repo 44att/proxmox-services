@@ -2,10 +2,10 @@
   systemd:
     name: Tdarr_Server
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Start Tdarr Node
   systemd:
     name: Tdarr_Node
     state: started
-    enabled: yes
+    enabled: true

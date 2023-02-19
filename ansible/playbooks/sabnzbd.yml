@@ -1,0 +1,5 @@
+---
+- hosts: sabnzbd
+  roles:
+    - { role: common, tags: all }
+    - { role: sabnzbd, tags: sabnzbd }

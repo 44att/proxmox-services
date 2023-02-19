@@ -1,7 +1,8 @@
 resource "proxmox_lxc" "pi-hole-primary" {
-  target_node     = "pve"
+  provider        = proxmox.apollo
+  target_node     = "apollo"
   hostname        = "pi-hole-primary"
-  ostemplate      = "local:vztmpl/ubuntu-20.04-standard_20.04-1_amd64.tar.gz"
+  ostemplate      = "/mnt/pve/iso/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -9,6 +10,7 @@ resource "proxmox_lxc" "pi-hole-primary" {
   onboot          = true
   vmid            = var.pi-hole-primary_lxcid
   memory          = 1024
+  cores           = 2
 
   // Terraform will crash without rootfs defined
   rootfs {

@@ -23,7 +23,7 @@
 
 - name: Install Radarr
   unarchive:
-    src: https://github.com/Radarr/Radarr/releases/download/v4.0.5.5981/Radarr.master.4.0.5.5981.linux-core-x64.tar.gz
+    src: https://github.com/Radarr/Radarr/releases/download/v4.3.2.6857/Radarr.master.4.3.2.6857.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
   notify:

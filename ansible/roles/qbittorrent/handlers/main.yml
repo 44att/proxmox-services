@@ -2,4 +2,4 @@
   systemd:
     name: qbittorrent
     state: started
-    enabled: yes
+    enabled: true

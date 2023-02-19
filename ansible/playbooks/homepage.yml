@@ -1,0 +1,5 @@
+---
+- hosts: homepage
+  roles:
+    - { role: common, tags: all }
+    - { role: homepage, tags: homepage }

@@ -1,41 +1,42 @@
 ---
+- name: Install unbound
+  apt:
+    pkg:
+      - unbound
+    state: latest
+
+- name: Ensure unbound and Pi-Hole directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /etc/pihole
+    - /var/log/unbound
+
+- name: Create unbound log file
+  file:
+    path: /var/log/unbound/unbound.log
+    state: touch
+
+- name: Copy unbound config
+  copy:
+    src: pi-hole.conf
+    dest: /etc/unbound/unbound.conf.d/
+  notify:
+    - Restart Unbound
+
 - name: Download Pi-hole installer
-  when: ansible_hostname == "pi-hole-primary"
   get_url:
     url: https://install.pi-hole.net
     dest: ~/install-pihole.sh
     mode: 0740
 
 - name: Copy Pi-hole setup config
-  when: ansible_hostname == "pi-hole-primary"
-  copy:
-    src: setupVars.conf
-    dest: /etc/pihole/
+  template:
+    src: setupVars.conf.j2
+    dest: /etc/pihole/setupVars.conf
   register: setup_conf_copied
-
-- name: Copy Pi-hole DHCP config
-  when: ansible_hostname == "raspberrypi"
-  copy:
-    src: 02-pihole-dhcp.conf
-    dest: /etc/dnsmasq.d/
-  notify:
-    - Restart Pi-hole
-
-- name: Copy Pi-hole DHCP static leases config
-  when: ansible_hostname == "raspberrypi"
-  copy:
-    src: 04-pihole-static-dhcp.conf
-    dest: /etc/dnsmasq.d/
-  notify:
-    - Restart Pi-hole
-
-- name: Copy Pi-hole DHCP DNS servers config
-  when: ansible_hostname == "raspberrypi"
-  copy:
-    src: 10-pihole-dns-servers.conf
-    dest: /etc/dnsmasq.d/
-  notify:
-    - Restart Pi-hole
 
 - name: Copy Pi-hole Local DNS Records config
   copy:

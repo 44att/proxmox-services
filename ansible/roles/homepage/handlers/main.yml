@@ -1,0 +1,11 @@
+- name: Start Homepage
+  systemd:
+    name: homepage
+    state: restarted
+    daemon_reload: true
+
+- name: Start Config Sync
+  systemd:
+    name: sync-config
+    state: restarted
+    daemon_reload: true

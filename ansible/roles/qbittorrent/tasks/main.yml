@@ -8,9 +8,9 @@
     name: qbittorrent
     groups: qbittorrent
     shell: /sbin/nologin
-    append: yes
+    append: true
     state: present
-    create_home: no
+    create_home: false
 
 - name: Install packages
   apt:
@@ -27,7 +27,7 @@
     pkg:
       - qbittorrent-nox
     state: latest
-    update_cache: yes
+    update_cache: true
 
 - name: Copy systemd service file to server
   copy:

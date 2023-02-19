@@ -1,0 +1,11 @@
+[Unit]
+Description=Sync config files automatically
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/bin/bash /root/sync-config.sh
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+---
+- name: Reboot to ensure terraform provisioner config is applied
+  reboot:
+
+- name: Read nvidia driver version from file
+  slurp:
+    src: ~/.nvidia-driver-version
+  register: encoded_nvidia_driver_version
+
+- name: Set nvidia driver version variable
+  set_fact:
+    nvidia_driver_version: "{{ encoded_nvidia_driver_version.content | b64decode | trim }}"
+
+- name: Check if nvidia driver is already installed
+  ignore_errors: true
+  shell:
+    cmd: nvidia-smi --query-gpu=driver_version --format=csv,noheader --id=0
+  register: exisiting_nvidia_driver_version
+
+- name: Download nvidia driver installer
+  when: exisiting_nvidia_driver_version.stdout != nvidia_driver_version
+  get_url:
+    url: https://us.download.nvidia.com/XFree86/Linux-x86_64/{{ nvidia_driver_version }}/NVIDIA-Linux-x86_64-{{ nvidia_driver_version }}.run
+    dest: ~/install-nvidia-driver.run
+    mode: 0740
+
+- name: Install nvidia driver
+  when: exisiting_nvidia_driver_version.stdout != nvidia_driver_version
+  shell:
+    cmd: ./install-nvidia-driver.run --no-kernel-module --silent
+
+- name: Remove nvidia driver installer
+  file:
+    path: ~/install-nvidia-driver.run
+    state: absent

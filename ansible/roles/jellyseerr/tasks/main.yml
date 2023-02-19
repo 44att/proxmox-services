@@ -1,0 +1,85 @@
+---
+- name: Create Jellyseerr group
+  group:
+    name: jellyseerr
+    state: present
+
+- name: Create Jellyseerr user
+  user:
+    name: jellyseerr
+    groups: jellyseerr
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+    state: latest
+
+- name: Create Jellyseerr directory if it does not exist
+  file:
+    path: /opt/jellyseerr
+    state: directory
+    mode: 0755
+
+- name: Add Jellyseerr directory as safe in git config
+  shell:
+    cmd: git config --global --add safe.directory /opt/jellyseerr
+
+- name: Install the gpg keys for nodejs LTS
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+    
+- name: Add the nodejs LTS repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install nodejs package
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install yarn
+  shell:
+    cmd: corepack enable; corepack prepare yarn@stable --activate
+
+- name: Download Jellyseerr
+  git:
+    repo: https://github.com/Fallenbagel/jellyseerr.git
+    dest: /opt/jellyseerr
+    depth: 1
+    force: true
+    version: main
+
+- name: Install Jellyseerr
+  shell:
+    chdir: /opt/jellyseerr
+    cmd: yarn install; yarn --silent run build
+
+- name: Recursively change ownership of Jellyseerr directory
+  file:
+    path: /opt/jellyseerr/
+    state: directory
+    recurse: true
+    owner: jellyseerr
+    group: jellyseerr
+
+- name: Copy Jellyseerr systemd service file
+  copy:
+    src: jellyseerr.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Jellyseerr

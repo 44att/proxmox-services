@@ -1,21 +1,19 @@
 resource "proxmox_lxc" "bazarr" {
-  target_node     = "pve"
+  target_node     = "hades"
   hostname        = "bazarr"
-  ostemplate      = "local:vztmpl/ubuntu-20.04-standard_20.04-1_amd64.tar.gz"
+  ostemplate      = "/mnt/pve/iso/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
-  ssh_public_keys = <<-EOT
-   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA6iDv3SIqB+4ycb9iuDNbxZ5Koz87LKTZG/QXuwBZgN brian@pop-os-2021-03-20
-	  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4ziGzxYeuB2dNSxurjyxvQTGxZwvoiTs/0pxmnPcDz brian@oneplus3t-2022-02-06
-  EOT
+  ssh_public_keys = file(var.pub_ssh_key)
   start           = true
   onboot          = true
   vmid            = var.bazarr_lxcid
   memory          = 1024
+  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
-    storage = "local-lvm"
+    storage = "local-zfs"
     size    = "4G"
   }
 
@@ -24,17 +22,17 @@ resource "proxmox_lxc" "bazarr" {
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/storage/appdata/bazarr/config"
-    volume  = "/mnt/storage/appdata/bazarr/config"
+    storage = "/mnt/pve/app_data/bazarr/config"
+    volume  = "/mnt/pve/app_data/bazarr/config"
   }
 
   mountpoint {
-    mp      = "/mnt/storage/media"
-    size    = "8G"
+    mp      = "/mnt/pve/media/media"
+    size    = "4000G"
     slot    = 1
     key     = "1"
-    storage = "/mnt/storage/media"
-    volume  = "/mnt/storage/media"
+    storage = "/mnt/pve/media/media"
+    volume  = "/mnt/pve/media/media"
   }
 
   network {
@@ -43,6 +41,7 @@ resource "proxmox_lxc" "bazarr" {
     gw     = var.gateway_ip
     ip     = var.bazarr_ip
     ip6    = "auto"
+    hwaddr = var.bazarr_mac
   }
 
   lifecycle {

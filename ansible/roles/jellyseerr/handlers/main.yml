@@ -1,0 +1,5 @@
+- name: Start Jellyseerr
+  systemd:
+    name: jellyseerr
+    state: restarted
+    daemon_reload: true

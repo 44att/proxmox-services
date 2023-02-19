@@ -1,18 +1,4 @@
-- name: Install packages
-  apt:
-    pkg:
-      - curl
-      - sqlite3
-    state: latest
-
-- name: Install Prowlarr
-  unarchive:
-    src: https://github.com/Prowlarr/Prowlarr/releases/download/v0.1.1.875/Prowlarr.develop.0.1.1.875.linux-core-x64.tar.gz
-    dest: /opt/
-    remote_src: yes
-  notify:
-    - Restart Prowlarr
-
+---
 - name: Create Prowlarr group
   group:
     name: prowlarr
@@ -23,15 +9,30 @@
     name: prowlarr
     groups: prowlarr
     shell: /sbin/nologin
-    append: yes
+    append: true
     state: present
-    create_home: no
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+      - sqlite3
+    state: latest
+
+- name: Install Prowlarr
+  unarchive:
+    src: https://github.com/Prowlarr/Prowlarr/releases/download/v1.1.3.2521/Prowlarr.master.1.1.3.2521.linux-core-x64.tar.gz
+    dest: /opt/
+    remote_src: true
+  notify:
+    - Restart Prowlarr
 
 - name: Recursively change ownership of Prowlarr directory
-  ansible.builtin.file:
+  file:
     path: /opt/Prowlarr
     state: directory
-    recurse: yes
+    recurse: true
     owner: prowlarr
     group: prowlarr
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=Jellyseerr Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+EnvironmentFile=/etc/jellyseerr/jellyseerr.conf
+Environment=NODE_ENV=production
+Environment=CONFIG_DIRECTORY=/etc/jellyseerr
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/jellyseerr
+ExecStart=/usr/bin/node dist/index.js
+
+[Install]
+WantedBy=multi-user.target

@@ -1,71 +1,63 @@
 [common]
-192.168.1.2
-192.168.1.3
-traefik.test
-unifi.test
-jellyfin.test
-sonarr.test
-radarr.test
-prowlarr.test
-nzbget.test
-qbittorrent.test
-samba.test
-tdarr.test
-bazarr.test
-network.test
-syncthing.test
-lidarr.test
-wireguard.test
-rclone.test
+192.168.1.20
+192.168.1.21
+; 192.168.1.39
+homepage.home.lan
+network.home.lan
+traefik.home.lan
+jellyfin.home.lan
+jellyseerr.home.lan
+prowlarr.home.lan
+bazarr.home.lan
+sonarr.home.lan
+radarr.home.lan
+lidarr.home.lan
+tdarr.home.lan
+sabnzbd.home.lan
+qbittorrent.home.lan
 
 [pi_hole]
-192.168.1.2
-192.168.1.3
+192.168.1.20
+192.168.1.21
 
-[traefik]
-traefik.test
+; [wireguard]
+; 192.168.1.39
 
-[unifi]
-unifi.test
-
-[jellyfin]
-jellyfin.test
-
-[sonarr]
-sonarr.test
-
-[radarr]
-radarr.test
-
-[prowlarr]
-prowlarr.test
-
-[nzbget]
-nzbget.test
-
-[qbittorrent]
-qbittorrent.test
-
-[samba]
-samba.test
-
-[tdarr]
-tdarr.test
-
-[bazarr]
-bazarr.test
+[homepage]
+homepage.home.lan
 
 [network]
-network.test
+network.home.lan
 
-[syncthing]
-syncthing.test
+[traefik]
+traefik.home.lan
+
+[jellyfin]
+jellyfin.home.lan
+
+[jellyseerr]
+jellyseerr.home.lan
+
+[prowlarr]
+prowlarr.home.lan
+
+[bazarr]
+bazarr.home.lan
+
+[sonarr]
+sonarr.home.lan
+
+[radarr]
+radarr.home.lan
 
 [lidarr]
-lidarr.test
+lidarr.home.lan
 
-[wireguard]
-wireguard.test
+[tdarr]
+tdarr.home.lan
 
-[rclone]
-rclone.test
+[sabnzbd]
+sabnzbd.home.lan
+
+[qbittorrent]
+qbittorrent.home.lan

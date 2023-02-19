@@ -30,16 +30,16 @@
     name: charlene
     groups: sambashare
     shell: /sbin/nologin
-    append: yes
+    append: true
     state: present
-    create_home: no
+    create_home: false
   register: charlene_created
 
 - name: Prompt for user brian's samba password
   when: brian_created.changed
   pause:
     prompt: "Please enter user brian's samba password"
-    echo: no
+    echo: false
   register: result
 
 - set_fact:
@@ -50,7 +50,7 @@
   when: charlene_created.changed
   pause:
     prompt: "Please enter user charlene's samba password"
-    echo: no
+    echo: false
   register: result_c
 
 - set_fact:

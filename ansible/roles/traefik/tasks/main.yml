@@ -1,10 +1,10 @@
 ---
 - name: Include my vars
-  ansible.builtin.include_vars: /home/brian/dev/my-data/ansible_vars.yml
+  ansible.builtin.include_vars: /Users/matt/.ansible/.default_vars.yml
 
 - name: Install Traefik
   ansible.builtin.unarchive:
-    src: https://github.com/traefik/traefik/releases/download/v2.9.6/traefik_v2.9.6_linux_amd64.tar.gz
+    src: https://github.com/traefik/traefik/releases/download/v2.9.8/traefik_v2.9.8_linux_amd64.tar.gz
     dest: /usr/local/bin
     remote_src: true
   notify:
@@ -37,6 +37,14 @@
   notify:
     - Restart Traefik
 
+- name: Create Jellyfin config file
+  ansible.builtin.template:
+    src: jellyfin.yml.j2
+    dest: /etc/traefik/config/jellyfin.yml
+    mode: 0644
+  notify:
+    - Restart Traefik
+
 - name: Create Traefik config file
   ansible.builtin.template:
     src: traefik.yml.j2
@@ -46,9 +54,9 @@
     - Restart Traefik
 
 - name: Copy systemd service file to server
-  ansible.builtin.copy:
-    src: traefik.service
-    dest: /etc/systemd/system
+  ansible.builtin.template:
+    src: traefik.service.j2
+    dest: /etc/systemd/system/traefik.service
     owner: root
     group: root
     mode: 0644

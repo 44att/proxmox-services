@@ -1,0 +1,12 @@
+---
+http:
+  routers:
+    to-lidarr:
+      rule: "Host(`music.home.lan`)"
+      service: lidarr
+
+  services:
+    lidarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.36:8686

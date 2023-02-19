@@ -7,7 +7,7 @@
 - name: Create Lidarr user
   user:
     name: lidarr
-    group: media
+    groups: media
     shell: /sbin/nologin
     append: true
     state: present
@@ -24,7 +24,7 @@
 
 - name: Install Lidarr
   unarchive:
-    src: https://github.com/Lidarr/Lidarr/releases/download/v0.8.1.2135/Lidarr.master.0.8.1.2135.linux-core-x64.tar.gz
+    src: https://github.com/Lidarr/Lidarr/releases/download/v1.0.2.2592/Lidarr.master.1.0.2.2592.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
 

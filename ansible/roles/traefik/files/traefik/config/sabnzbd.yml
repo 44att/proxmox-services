@@ -1,0 +1,12 @@
+---
+http:
+  routers:
+    to-sabnzbd:
+      rule: "Host(`nzbs.home.lan`)"
+      service: sabnzbd
+
+  services:
+    sabnzbd:
+      loadBalancer:
+        servers:
+          - url: http://192.168.10.30:8080

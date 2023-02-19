@@ -2,5 +2,5 @@
 http:
   routers:
     api:
-      rule: Host(`traefik.test`)
+      rule: Host(`traefik.home.lan`)
       service: api@internal

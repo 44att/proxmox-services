@@ -1,3 +1,4 @@
+---
 - name: Create Tdarr group
   group:
     name: tdarr
@@ -8,21 +9,23 @@
     name: tdarr
     groups: tdarr
     shell: /sbin/nologin
-    append: yes
+    append: true
     state: present
-    create_home: no
+    create_home: false
+
+- name: Create tdarr home directory
+  file:
+    path: /home/tdarr
+    state: directory
+    owner: tdarr
+    group: tdarr
 
 - name: Install packages
   apt:
     pkg:
       - unzip
       - gnupg
-      - software-properties-common
     state: latest
-
-- name: Add HandBrake stable repository from PPA
-  ansible.builtin.apt_repository:
-    repo: ppa:stebbins/handbrake-releases
 
 - name: Install video transcoding packages
   apt:
@@ -30,27 +33,30 @@
       - ffmpeg
       - handbrake-cli
     state: latest
-    update_cache: yes
+    update_cache: true
 
 - name: Install Tdarr Updater
   unarchive:
-    src: https://f000.backblazeb2.com/file/tdarrs/versions/2.00.08/linux_x64/Tdarr_Updater.zip
+    src: https://f000.backblazeb2.com/file/tdarrs/versions/2.00.15/linux_x64/Tdarr_Updater.zip
     dest: /opt/Tdarr
-    remote_src: yes
+    remote_src: true
 
 - name: Download Tdarr Node and Server
-  ansible.builtin.command:
+  command:
     argv:
       - /opt/Tdarr/Tdarr_Updater
     creates: /opt/Tdarr/Tdarr_Server
 
-- name: Recursively change ownership of Tdarr directory
-  ansible.builtin.file:
-    path: /opt/Tdarr/
+- name: Recursively change ownership of Tdarr directories
+  file:
+    path: "{{ item }}"
     state: directory
-    recurse: yes
+    recurse: true
     owner: tdarr
     group: tdarr
+  loop:
+    - /opt/Tdarr/
+    - /var/cache/tdarr/
 
 - name: Copy Tdarr Server systemd service file
   copy:

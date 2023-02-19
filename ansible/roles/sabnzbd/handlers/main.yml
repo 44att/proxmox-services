@@ -1,0 +1,5 @@
+- name: Start SABnzbd
+  systemd:
+    name: sabnzbdplus
+    state: restarted
+    daemon_reload: true

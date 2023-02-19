@@ -1,5 +1,0 @@
----
-- hosts: unifi
-  roles:
-    - { role: common, tags: all }
-    - { role: unifi, tags: unifi }

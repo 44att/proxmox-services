@@ -2,11 +2,11 @@
 http:
   routers:
     to-prowlarr:
-      rule: "Host(`search.test`)"
+      rule: "Host(`search.home.lan`)"
       service: prowlarr
 
   services:
     prowlarr:
       loadBalancer:
         servers:
-          - url: http://192.168.1.24:9696
+          - url: http://192.168.1.32:9696

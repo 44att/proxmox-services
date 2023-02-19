@@ -20,5 +20,8 @@ certificatesResolvers:
     acme:
       email: "{{ acme_email }}"
       storage: /traefik-config/acme.json
-      httpChallenge:
-        entryPoint: web
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "9.9.9.9"
+          - "149.112.112.112"

@@ -1,0 +1,12 @@
+---
+http:
+  routers:
+    to-homepage:
+      rule: "Host(`dashboard.home.lan`)"
+      service: homepage
+
+  services:
+    homepage:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.16:3000

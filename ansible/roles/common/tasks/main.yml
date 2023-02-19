@@ -5,26 +5,48 @@
     upgrade: full
   tags: always
 
-- name: Install kitty-terminfo
+- name: Install zsh and powerline fonts
   ansible.builtin.apt:
     pkg:
-      - kitty-terminfo
+      - language-pack-en
+      - fonts-powerline
+      - zsh
+      - git
     state: latest
 
-- name: Set XPS13 authorized key
-  ansible.posix.authorized_key:
-    user: root
-    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA6iDv3SIqB+4ycb9iuDNbxZ5Koz87LKTZG/QXuwBZgN brian@pop-os-2021-03-20"
-    state: present
+- name: Clone oh-my-zsh
+  ansible.builtin.git:
+    repo: https://github.com/ohmyzsh/ohmyzsh.git
+    dest: /root/.oh-my-zsh
+    depth: 1
 
-- name: Set OnePlus3T authorized key
-  ansible.posix.authorized_key:
-    user: root
-    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4ziGzxYeuB2dNSxurjyxvQTGxZwvoiTs/0pxmnPcDz brian@oneplus3t-2022-02-06"
-    state: present
+- name: Set correct permissions for oh-my-zsh files
+  ansible.builtin.file:
+    path: /root/.oh-my-zsh/
+    owner: root
+    group: root
+    mode: u=rwX,g=rX,o=rX
+    recurse: true
 
-- name: Set Samsung_S20_FE authorized key
+- name: Create .zshrc file
+  ansible.builtin.template:
+    src: zshrc.j2
+    dest: /root/.zshrc
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: root
+    shell: /bin/zsh
+
+- name: Set authorized keys for MacbookPro, iPhone and gaming PC
   ansible.posix.authorized_key:
     user: root
-    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0hWDvdigGG+CV1P73mdjz6b7fXBGmfhg962pDEgT/9 brian@samsung_s20_fe-2022-08-19"
+    key: "{{ item }}"
     state: present
+  loop:
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOnhPKxWPeKknPPIXqbfiXJbSEyQ8cBEIsdZ9vquwPl9 matt@Matthews-MBP"
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP+7gkYWyHKkc3SnvFie/+y2BvV6T2sOhcnky59qC553 matt@iphone13"
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHmJct/UiTZmHQ357Cmh+sWBojHs0JydZsof9Br+8WJb matt@gaming-pc"

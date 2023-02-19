@@ -1,0 +1,12 @@
+[Unit]
+Description=Traefik service
+
+[Service]
+User=traefik
+Group=traefik
+ExecStart=traefik
+Environment=CF_API_EMAIL={{ acme_email }}
+Environment=CF_DNS_API_TOKEN={{ cf_dns_api_token }}
+
+[Install]
+WantedBy=multi-user.target

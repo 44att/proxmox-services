@@ -1,21 +1,19 @@
 resource "proxmox_lxc" "lidarr" {
-  target_node     = "pve"
+  target_node     = "hades"
   hostname        = "lidarr"
-  ostemplate      = "local:vztmpl/ubuntu-20.04-standard_20.04-1_amd64.tar.gz"
+  ostemplate      = "/mnt/pve/iso/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
-  ssh_public_keys = <<-EOT
-   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA6iDv3SIqB+4ycb9iuDNbxZ5Koz87LKTZG/QXuwBZgN brian@pop-os-2021-03-20
-	  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4ziGzxYeuB2dNSxurjyxvQTGxZwvoiTs/0pxmnPcDz brian@oneplus3t-2022-02-06
-  EOT
+  ssh_public_keys = file(var.pub_ssh_key)
   start           = true
   onboot          = true
   vmid            = var.lidarr_lxcid
   memory          = 1024
+  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
-    storage = "local-lvm"
+    storage = "local-zfs"
     size    = "4G"
   }
 
@@ -24,17 +22,17 @@ resource "proxmox_lxc" "lidarr" {
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/storage/appdata/lidarr/config"
-    volume  = "/mnt/storage/appdata/lidarr/config"
+    storage = "/mnt/pve/app_data/lidarr/config"
+    volume  = "/mnt/pve/app_data/lidarr/config"
   }
 
   mountpoint {
-    mp      = "/mnt/storage"
-    size    = "8G"
+    mp      = "/mnt/pve/media"
+    size    = "4000G"
     slot    = 1
     key     = "1"
-    storage = "/mnt/storage"
-    volume  = "/mnt/storage"
+    storage = "/mnt/pve/media"
+    volume  = "/mnt/pve/media"
   }
 
   network {
@@ -43,6 +41,7 @@ resource "proxmox_lxc" "lidarr" {
     gw     = var.gateway_ip
     ip     = var.lidarr_ip
     ip6    = "auto"
+    hwaddr = var.lidarr_mac
   }
 
   lifecycle {

@@ -1,0 +1,61 @@
+- name: Create SABnzbd group
+  group:
+    name: sabnzbd
+    state: present
+
+- name: Create SABnzbd user
+  user:
+    name: sabnzbd
+    groups: sabnzbd
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+    state: latest
+
+- name: Add the Universe and Multiverse repositories
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop:
+    - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-security universe multiverse"
+
+- name: Add the SABnzbd repository Apt signing key
+  apt_key:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x98703123e0f52b2be16d586ef13930b14bb9f05f
+    state: present
+    keyring: /etc/apt/trusted.gpg.d/sabnzbd.gpg
+
+- name: Add the SABnzbd repository
+  apt_repository:
+    repo: deb [arch=amd64] https://ppa.launchpadcontent.net/jcfp/nobetas/ubuntu {{ ansible_distribution_release }} main
+    filename: sabnzbd
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install SABnzbd package
+  apt:
+    pkg:
+      - sabnzbdplus
+    state: latest
+
+- name: Copy SABnzbd config file
+  copy:
+    src: sabnzbdplus
+    dest: /etc/default/sabnzbdplus
+    owner: root
+    group: root
+  notify:
+    - Start SABnzbd

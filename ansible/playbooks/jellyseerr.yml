@@ -1,0 +1,5 @@
+---
+- hosts: jellyseerr
+  roles:
+    - { role: common, tags: all }
+    - { role: jellyseerr, tags: jellyseerr }
