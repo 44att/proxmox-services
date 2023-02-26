@@ -16,6 +16,8 @@ terraform destroy -target=proxmox_lxc.unifi
 ./ansible/
 
 ansible-playbook ./playbooks/jellyfin.yml
+
+ansible-playbook ./playbooks/pi-hole.yml --tags "dns" --list-tasks
 ```
 
 ```bash

@@ -44,6 +44,8 @@
     dest: /etc/pihole/
   notify:
     - Restart Pi-hole
+  tags:
+    - dns
 
 - name: Install Pi-hole
   when: setup_conf_copied.changed
