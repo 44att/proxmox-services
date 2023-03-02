@@ -1,0 +1,5 @@
+- name: Start Navidrome
+  systemd:
+    name: navidrome
+    state: restarted
+    daemon_reload: true

@@ -42,11 +42,14 @@
   notify:
     - Restart Traefik
 
-- name: Create Jellyfin config file
+- name: Create config files from templates
   ansible.builtin.template:
-    src: jellyfin.yml.j2
-    dest: /etc/traefik/config/jellyfin.yml
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}" 
     mode: 0644
+  loop:
+    - { src: jellyfin.yml.j2, dest: /etc/traefik/config/jellyfin.yml }
+    - { src: navidrome.yml.j2, dest: /etc/traefik/config/navidrome.yml }
   notify:
     - Restart Traefik
 

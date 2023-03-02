@@ -16,3 +16,4 @@
 - import_playbook: ./playbooks/tdarr.yml
 - import_playbook: ./playbooks/traefik.yml
 - import_playbook: ./playbooks/homepage.yml
+- import_playbook: ./playbooks/navidrome.yml

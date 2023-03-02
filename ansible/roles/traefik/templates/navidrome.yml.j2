@@ -1,0 +1,21 @@
+---
+http:
+  routers:
+    to-navidrome:
+      rule: "Host(`music-server.home.lan`)"
+      service: navidrome
+    to-navidrome-secure:
+      rule: "Host(`music.{{ external_domain }}`)"
+      service: navidrome
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    navidrome:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.38:4533

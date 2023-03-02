@@ -142,9 +142,14 @@ variable "qbittorrent_lxcid" {
   default = 511
 }
 
-variable "samba_lxcid" {
+variable "navidrome_lxcid" {
   type    = number
   default = 512
+}
+
+variable "samba_lxcid" {
+  type    = number
+  default = 513
 }
 
 variable "docker_lxcid" {
@@ -257,6 +262,11 @@ variable "lidarr_mac" {
   default = "F6:1D:39:81:48:4C"
 }
 
+variable "navidrome_mac" {
+  type    = string
+  default = "26:18:8A:49:40:33"
+}
+
 variable "pi-hole-primary_ip" {
   type    = string
   default = "192.168.1.20/24"
@@ -325,6 +335,11 @@ variable "network_ip" {
 variable "tdarr_ip" {
   type    = string
   default = "192.168.1.37/24"
+}
+
+variable "navidrome_ip" {
+  type    = string
+  default = "192.168.1.38/24"
 }
 
 variable "docker_ip" {

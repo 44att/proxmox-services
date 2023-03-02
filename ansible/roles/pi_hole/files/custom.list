@@ -16,6 +16,7 @@
 192.168.1.29 movies.home.lan
 192.168.1.29 tv.home.lan
 192.168.1.29 music.home.lan
+192.168.1.29 music-server.home.lan
 192.168.1.29 nzbs.home.lan
 192.168.1.29 torrents.home.lan
 192.168.1.29 subtitles.home.lan
@@ -29,5 +30,6 @@
 192.168.1.35 radarr.home.lan
 192.168.1.36 lidarr.home.lan
 192.168.1.37 tdarr.home.lan
+192.168.1.38 navidrome.home.lan
 192.168.10.30 sabnzbd.home.lan
 192.168.10.31 qbittorrent.home.lan

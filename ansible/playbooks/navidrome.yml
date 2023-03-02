@@ -1,0 +1,6 @@
+---
+- hosts: navidrome
+  roles:
+    - { role: common, tags: all }
+    - { role: nvidia, tags: all }
+    - { role: navidrome, tags: navidrome }

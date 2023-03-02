@@ -15,6 +15,7 @@ lidarr.home.lan
 tdarr.home.lan
 sabnzbd.home.lan
 qbittorrent.home.lan
+navidrome.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -61,3 +62,6 @@ sabnzbd.home.lan
 
 [qbittorrent]
 qbittorrent.home.lan
+
+[navidrome]
+navidrome.home.lan

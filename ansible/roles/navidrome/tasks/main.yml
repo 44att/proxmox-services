@@ -1,0 +1,63 @@
+---
+- name: Create Navidrome group
+  group:
+    name: navidrome
+    state: present
+
+- name: Create Navidrome user
+  user:
+    name: navidrome
+    groups: navidrome
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install ffmpeg package
+  apt:
+    pkg: ffmpeg
+    state: latest
+    update_cache: true
+
+- name: Create Navidrome directory if it does not exist
+  file:
+    path: /opt/navidrome
+    state: directory
+    mode: 0755
+
+- name: Install Navidrome
+  unarchive:
+    src: https://github.com/navidrome/navidrome/releases/download/v0.49.3/navidrome_0.49.3_Linux_x86_64.tar.gz
+    dest: /opt/navidrome
+    remote_src: true
+
+- name: Copy Navidrome config from backup if it does not exist already
+  copy:
+    src: "/Navidrome-data/{{ item }}"
+    dest: "/var/lib/navidrome/{{ item }}"
+    force: false
+    remote_src: true
+  loop:
+    - navidrome.db
+    - navidrome.db-shm
+    - navidrome.db-wal
+
+- name: Recursively change ownership of Navidrome directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: navidrome
+    group: navidrome
+  loop:
+    - /opt/navidrome
+    - /var/lib/navidrome
+
+- name: Copy systemd service file to server
+  copy:
+    src: navidrome.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Navidrome
