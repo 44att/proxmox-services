@@ -29,6 +29,11 @@
     capability: cap_net_bind_service+ep
     state: present
 
+- name: Remove old Traefik config
+  file:
+    state: absent
+    path: /etc/traefik/
+
 - name: Copy Traefik config
   ansible.builtin.copy:
     src: traefik
