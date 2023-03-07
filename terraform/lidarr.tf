@@ -18,12 +18,12 @@ resource "proxmox_lxc" "lidarr" {
   }
 
   mountpoint {
-    mp      = "/var/lib/lidarr"
+    mp      = "/Lidarr-data"
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/pve/app_data/lidarr/config"
-    volume  = "/mnt/pve/app_data/lidarr/config"
+    storage = "/mnt/pve/app_data/lidarr"
+    volume  = "/mnt/pve/app_data/lidarr"
   }
 
   mountpoint {

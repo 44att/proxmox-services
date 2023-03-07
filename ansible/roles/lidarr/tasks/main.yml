@@ -22,19 +22,34 @@
       - libchromaprint-tools
     state: latest
 
+- name: Create Lidarr directory if it does not exist
+  file:
+    path: /var/lib/lidarr
+    state: directory
+    mode: 0755
+
 - name: Install Lidarr
   unarchive:
     src: https://github.com/Lidarr/Lidarr/releases/download/v1.0.2.2592/Lidarr.master.1.0.2.2592.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
 
-- name: Recursively change ownership of Lidarr directory
-  ansible.builtin.file:
-    path: /opt/Lidarr
+- name: Synchronize Lidarr config from backup source
+  synchronize:
+    src: "/Lidarr-data/"
+    dest: "/var/lib/lidarr/"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Lidarr directories
+  file:
+    path: "{{ item }}"
     state: directory
     recurse: true
     owner: lidarr
     group: media
+  loop:
+    - /opt/Lidarr
+    - /var/lib/lidarr
 
 - name: Copy systemd service file to server
   copy:
@@ -44,3 +59,16 @@
     group: root
   notify:
     - Start Lidarr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup lidarr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup lidarr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/lidarr/ /Lidarr-data"
