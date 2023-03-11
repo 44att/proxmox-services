@@ -22,8 +22,8 @@ resource "proxmox_lxc" "radarr" {
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/pve/app_data/radarr/config"
-    volume  = "/mnt/pve/app_data/radarr/config"
+    storage = "/mnt/pve/app_data/radarr"
+    volume  = "/mnt/pve/app_data/radarr"
   }
 
   mountpoint {

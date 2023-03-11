@@ -21,21 +21,34 @@
       - sqlite3
     state: latest
 
+- name: Create Radarr directory if it does not exist
+  file:
+    path: /var/lib/radarr
+    state: directory
+    mode: 0755
+
 - name: Install Radarr
   unarchive:
     src: https://github.com/Radarr/Radarr/releases/download/v4.3.2.6857/Radarr.master.4.3.2.6857.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
-  notify:
-    - Start Radarr
+
+- name: Synchronize Radarr config from backup source
+  synchronize:
+    src: "/Radarr-data/"
+    dest: "/var/lib/radarr/"
+  delegate_to: "{{ inventory_hostname }}"
 
 - name: Recursively change ownership of Radarr directory
-  ansible.builtin.file:
-    path: /opt/Radarr
+  file:
+    path: "{{ item }}"
     state: directory
     recurse: true
     owner: radarr
     group: radarr
+  loop:
+    - /opt/Radarr
+    - /var/lib/radarr
 
 - name: Copy systemd service file to server
   copy:
@@ -45,3 +58,16 @@
     group: root
   notify:
     - Start Radarr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup radarr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup radarr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/radarr/ /Radarr-data"

@@ -18,12 +18,12 @@ resource "proxmox_lxc" "sonarr" {
   }
 
   mountpoint {
-    mp      = "/var/lib/sonarr"
+    mp      = "/Sonarr-data"
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/pve/sonarr_data/config"
-    volume  = "/mnt/pve/sonarr_data/config"
+    storage = "/mnt/pve/app_data/sonarr"
+    volume  = "/mnt/pve/app_data/sonarr"
   }
 
   mountpoint {
