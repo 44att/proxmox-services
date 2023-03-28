@@ -8,7 +8,7 @@ resource "proxmox_lxc" "sabnzbd" {
   start           = true
   onboot          = true
   vmid            = var.sabnzbd_lxcid
-  memory          = 1024
+  memory          = 2048
   nameserver      = var.gateway_ip_vlan_10
 
   // Terraform will crash without rootfs defined
