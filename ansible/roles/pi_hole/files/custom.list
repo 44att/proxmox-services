@@ -8,6 +8,7 @@
 192.168.1.16 homepage.home.lan
 192.168.1.20 pi-hole.home.lan
 192.168.1.21 pi-hole-2.home.lan
+192.168.1.22 crowdsec.home.lan
 192.168.1.28 network.home.lan
 192.168.1.29 traefik.home.lan
 192.168.1.29 dashboard.home.lan

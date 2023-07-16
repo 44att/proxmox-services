@@ -1,0 +1,9 @@
+/var/log/traefik/*.log {
+  size 10M
+  rotate 5
+  missingok
+  notifempty
+  postrotate
+    systemctl kill --signal=USR1 traefik
+  endscript
+}

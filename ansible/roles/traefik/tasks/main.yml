@@ -1,9 +1,9 @@
 ---
 - name: Include my vars
-  ansible.builtin.include_vars: /Users/matt/.ansible/.default_vars.yml
+  include_vars: /Users/matt/.ansible/.default_vars.yml
 
 - name: Install Traefik
-  ansible.builtin.unarchive:
+  unarchive:
     src: https://github.com/traefik/traefik/releases/download/v2.9.8/traefik_v2.9.8_linux_amd64.tar.gz
     dest: /usr/local/bin
     remote_src: true
@@ -11,12 +11,12 @@
     - Restart Traefik
 
 - name: Create Traefik group
-  ansible.builtin.group:
+  group:
     name: traefik
     state: present
 
 - name: Create Traefik user
-  ansible.builtin.user:
+  user:
     name: traefik
     group: traefik
     shell: /sbin/nologin
@@ -35,7 +35,7 @@
     path: /etc/traefik/
 
 - name: Copy Traefik config
-  ansible.builtin.copy:
+  copy:
     src: traefik
     dest: /etc
     mode: 0755
@@ -43,7 +43,7 @@
     - Restart Traefik
 
 - name: Create config files from templates
-  ansible.builtin.template:
+  template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}" 
     mode: 0644
@@ -54,15 +54,26 @@
     - Restart Traefik
 
 - name: Create Traefik config file
-  ansible.builtin.template:
+  template:
     src: traefik.yml.j2
     dest: /etc/traefik/traefik.yml
     mode: 0644
   notify:
     - Restart Traefik
 
+- name: Create Traefik plugins and logs directories if they do not exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: traefik
+    group: traefik
+    mode: 0755
+  loop:
+    - "/etc/traefik/plugins-storage"
+    - "/var/log/traefik"
+
 - name: Copy systemd service file to server
-  ansible.builtin.template:
+  template:
     src: traefik.service.j2
     dest: /etc/systemd/system/traefik.service
     owner: root
@@ -70,3 +81,35 @@
     mode: 0644
   notify:
     - Start Traefik
+
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/traefik
+    dest: /etc/logrotate.d/traefik
+
+- name: Run logrotate
+  shell: logrotate /etc/logrotate.conf
+
+- name: Remove old cron jobs if they exist
+  cron:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "copy traefik logs"
+    - "logrotate"
+
+- name: Create logs cron job
+  cron:
+    name: "copy traefik logs"
+    weekday: "*"
+    minute: "*/5"
+    hour: "*"
+    job: "rsync -qauz --delete --no-perms --no-owner --no-group /var/log/traefik/ /traefik-config/logs"
+
+- name: Create logrotate cron job
+  cron:
+    name: "logrotate"
+    weekday: "*"
+    minute: "*/10"
+    hour: "*"
+    job: "logrotate /etc/logrotate.conf"

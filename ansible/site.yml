@@ -17,3 +17,4 @@
 - import_playbook: ./playbooks/traefik.yml
 - import_playbook: ./playbooks/homepage.yml
 - import_playbook: ./playbooks/navidrome.yml
+- import_playbook: ./playbooks/crowdsec.yml

@@ -177,6 +177,11 @@ variable "rclone_lxcid" {
   default = 519
 }
 
+variable "crowdsec_lxcid" {
+  type    = number
+  default = 599
+}
+
 variable "homepage_mac" {
   type    = string
   default = "2E:08:E2:3F:BE:36"
@@ -267,6 +272,11 @@ variable "navidrome_mac" {
   default = "26:18:8A:49:40:33"
 }
 
+variable "crowdsec_mac" {
+  type    = string
+  default = "7A:65:CB:DB:E0:12"
+}
+
 variable "pi-hole-primary_ip" {
   type    = string
   default = "192.168.1.20/24"
@@ -275,6 +285,11 @@ variable "pi-hole-primary_ip" {
 variable "pi-hole-secondary_ip" {
   type    = string
   default = "192.168.1.21/24"
+}
+
+variable "crowdsec_ip" {
+  type    = string
+  default = "192.168.1.22/24"
 }
 
 variable "traefik_ip" {

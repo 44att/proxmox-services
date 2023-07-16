@@ -1,4 +1,21 @@
 ---
+log:
+  filePath: "/var/log/traefik/traefik.log"
+  format: json
+
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  format: json
+  fields:
+    headers:
+      defaultMode: keep
+
+experimental:
+  plugins:
+    cloudflarewarp:
+      moduleName: "github.com/BetterCorp/cloudflarewarp"
+      version: "v1.3.3"
+
 entryPoints:
   web:
     address: :80

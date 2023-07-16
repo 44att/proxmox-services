@@ -1,5 +1,11 @@
 ---
 http:
+  middlewares:
+    cloudflarewarp:
+      plugin:
+        cloudflarewarp:
+          disableDefault: false
+
   routers:
     to-jellyfin:
       rule: "Host(`media.home.lan`)"
@@ -13,6 +19,8 @@ http:
           - main: "{{ external_domain }}"
             sans:
               - "*.{{ external_domain }}"
+      middlewares:
+        - cloudflarewarp
 
   services:
     jellyfin:

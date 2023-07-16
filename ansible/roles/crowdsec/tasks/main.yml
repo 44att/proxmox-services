@@ -1,0 +1,92 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Crowdsec group
+  group:
+    name: crowdsec
+    state: present
+
+- name: Create Crowdsec user
+  user:
+    name: crowdsec
+    groups: crowdsec
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+    state: latest
+
+- name: Add the Crowdsec repository Apt signing key
+  apt_key:
+    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+    state: present
+    keyring: /etc/apt/keyrings/crowdsec_crowdsec-archive-keyring.gpg
+
+- name: Add the Crowdsec repository
+  apt_repository:
+    repo: "{{ item }}"
+    filename: crowdsec_crowdsec
+    state: present
+  loop:
+    - "deb [signed-by=/etc/apt/keyrings/crowdsec_crowdsec-archive-keyring.gpg] https://packagecloud.io/crowdsec/crowdsec/ubuntu {{ ansible_distribution_release }} main"
+    - "deb-src [signed-by=/etc/apt/keyrings/crowdsec_crowdsec-archive-keyring.gpg] https://packagecloud.io/crowdsec/crowdsec/ubuntu {{ ansible_distribution_release }} main"
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install Crowdsec packages
+  apt:
+    pkg:
+      - crowdsec
+      - crowdsec-cloudflare-bouncer
+    state: latest
+
+- name: Create aquisition directory if it does not exist
+  file:
+    path: /etc/crowdsec/acquis.d
+    state: directory
+
+- name: Copy aquisition config
+  copy:
+    src: acquis.d
+    dest: /etc/crowdsec
+    mode: 0755
+  notify:
+    - Restart Traefik
+
+- name: Create config for Crowdsec Cloudflare bouncer
+  template:
+    src: crowdsec-cloudflare-bouncer.yaml.j2
+    dest: /etc/crowdsec/bouncers/crowdsec-cloudflare-bouncer.yaml
+    mode: 0644
+  notify:
+    - Restart Crowdsec Cloudflare bouncer
+
+- name: Register Crowdsec Cloudflare bouncer and get API key
+  shell: cscli -oraw bouncers add cloudflarebouncer
+  register: bouncer_api_key
+
+- name: Add API key to config
+  lineinfile:
+    path: /etc/crowdsec/bouncers/crowdsec-cloudflare-bouncer.yaml
+    regexp: '^crowdsec_lapi_key: '
+    line: "crowdsec_lapi_key: {{ bouncer_api_key.stdout }}"
+  notify:
+    - Restart Crowdsec Cloudflare bouncer
+
+- name: Setup Crowdsec Cloudflare bouncer
+  shell: |
+    crowdsec-cloudflare-bouncer -d
+    cscli collections install crowdsecurity/traefik
+    crowdsec-cloudflare-bouncer -s
+  notify:
+    - Restart Crowdsec Cloudflare bouncer

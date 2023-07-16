@@ -1,0 +1,12 @@
+---
+- name: Start Crowdsec Cloudflare bouncer
+  systemd:
+    name: crowdsec-cloudflare-bouncer
+    state: started
+    enabled: true
+
+- name: Restart Crowdsec Cloudflare bouncer
+  systemd:
+    name: crowdsec-cloudflare-bouncer
+    state: restarted
+    daemon_reload: true
