@@ -22,7 +22,7 @@
 
 - name: Install Prowlarr
   unarchive:
-    src: https://github.com/Prowlarr/Prowlarr/releases/download/v1.2.2.2699/Prowlarr.master.1.2.2.2699.linux-core-x64.tar.gz
+    src: https://github.com/Prowlarr/Prowlarr/releases/download/v1.6.3.3608/Prowlarr.master.1.6.3.3608.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
   notify:
