@@ -16,20 +16,22 @@
 - name: Install packages
   apt:
     pkg:
+      - python3-dev
       - python3-pip
       - python3-distutils
+      - unrar
       - unzip
     state: latest
 
 - name: Create Bazarr directory if it does not exist
-  ansible.builtin.file:
-    path: /opt/bazarr
+  file:
+    path: /opt/bazarr/data
     state: directory
     mode: 0755
 
 - name: Install Bazarr
   unarchive:
-    src: https://github.com/morpheus65535/bazarr/releases/download/v1.0.2/bazarr.zip
+    src: https://github.com/morpheus65535/bazarr/releases/download/v1.3.1/bazarr.zip
     dest: /opt/bazarr
     remote_src: true
 
@@ -37,8 +39,14 @@
   pip:
     requirements: /opt/bazarr/requirements.txt
 
+- name: Synchronize Bazarr config from backup source
+  synchronize:
+    src: "/Bazarr-data/"
+    dest: "/opt/bazarr/data"
+  delegate_to: "{{ inventory_hostname }}"
+
 - name: Recursively change ownership of Bazarr directory
-  ansible.builtin.file:
+  file:
     path: /opt/bazarr/
     state: directory
     recurse: true
@@ -53,3 +61,16 @@
     group: root
   notify:
     - Start Bazarr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup bazarr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup bazarr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /opt/bazarr/data/ /Bazarr-data"

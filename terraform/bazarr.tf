@@ -18,12 +18,12 @@ resource "proxmox_lxc" "bazarr" {
   }
 
   mountpoint {
-    mp      = "/var/lib/bazarr"
+    mp      = "/Bazarr-data"
     size    = "8G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/pve/app_data/bazarr/config"
-    volume  = "/mnt/pve/app_data/bazarr/config"
+    storage = "/mnt/pve/app_data/bazarr"
+    volume  = "/mnt/pve/app_data/bazarr"
   }
 
   mountpoint {
