@@ -31,7 +31,7 @@
 
 - name: Install Bazarr
   unarchive:
-    src: https://github.com/morpheus65535/bazarr/releases/download/v1.3.1/bazarr.zip
+    src: https://github.com/morpheus65535/bazarr/releases/download/v1.4.0/bazarr.zip
     dest: /opt/bazarr
     remote_src: true
 
