@@ -147,9 +147,14 @@ variable "navidrome_lxcid" {
   default = 512
 }
 
-variable "samba_lxcid" {
+variable "recyclarr_lxcid" {
   type    = number
   default = 513
+}
+
+variable "samba_lxcid" {
+  type    = number
+  default = 514
 }
 
 variable "docker_lxcid" {
@@ -272,6 +277,11 @@ variable "navidrome_mac" {
   default = "26:18:8A:49:40:33"
 }
 
+variable "recyclarr_mac" {
+  type    = string
+  default = "9A:02:CA:A5:37:8C"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -355,6 +365,11 @@ variable "tdarr_ip" {
 variable "navidrome_ip" {
   type    = string
   default = "192.168.1.38/24"
+}
+
+variable "recyclarr_ip" {
+  type    = string
+  default = "192.168.1.39/24"
 }
 
 variable "docker_ip" {

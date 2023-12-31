@@ -11,6 +11,7 @@ prowlarr.home.lan
 bazarr.home.lan
 sonarr.home.lan
 radarr.home.lan
+recyclarr.home.lan
 lidarr.home.lan
 tdarr.home.lan
 sabnzbd.home.lan
@@ -51,6 +52,9 @@ sonarr.home.lan
 
 [radarr]
 radarr.home.lan
+
+[recyclarr]
+recyclarr.home.lan
 
 [lidarr]
 lidarr.home.lan

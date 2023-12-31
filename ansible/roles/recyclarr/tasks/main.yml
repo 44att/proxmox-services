@@ -1,0 +1,52 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Recyclarr group
+  group:
+    name: recyclarr
+    state: present
+
+- name: Create Recyclarr user
+  user:
+    name: recyclarr
+    groups: recyclarr
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install Recyclarr
+  unarchive:
+    src: https://github.com/recyclarr/recyclarr/releases/latest/download/recyclarr-linux-x64.tar.xz
+    dest: /usr/local/bin/
+    remote_src: true
+
+- name: Ensure Recyclarr config directory exists
+  file:
+    path: "~/.config/recyclarr"
+    state: directory
+    mode: 0755
+
+- name: Create Recyclarr config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: secrets.yml.j2, dest: ~/.config/recyclarr/secrets.yml }
+    - { src: recyclarr.yml.j2, dest: ~/.config/recyclarr/recyclarr.yml }
+
+- name: Sync Recylarr config
+  shell:
+    cmd: recyclarr sync
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "sync recyclarr config"
+    state: absent
+
+- name: Create sync config cron job
+  cron:
+    name: "sync recyclarr config"
+    special_time: daily
+    job: "recyclarr sync > /dev/null"

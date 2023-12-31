@@ -1,0 +1,5 @@
+---
+- hosts: recyclarr
+  roles:
+    - { role: common, tags: all }
+    - { role: recyclarr, tags: recyclarr }
