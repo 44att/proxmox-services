@@ -40,8 +40,11 @@
 
 - name: Copy Pi-hole Local DNS Records config
   copy:
-    src: custom.list
+    src: "{{ item }}"
     dest: /etc/pihole/
+  loop:
+    - custom.list
+    - pihole-FTL.conf
   notify:
     - Restart Pi-hole
   tags:
@@ -49,7 +52,7 @@
 
 - name: Install Pi-hole
   when: setup_conf_copied.changed
-  ansible.builtin.command:
+  command:
     argv:
       - ~/install-pihole.sh
       - --unattended
