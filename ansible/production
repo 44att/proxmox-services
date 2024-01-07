@@ -20,6 +20,7 @@ navidrome.home.lan
 crowdsec.home.lan
 threadfin.home.lan
 plex.home.lan
+upgradinatorr.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -81,3 +82,6 @@ threadfin.home.lan
 
 [plex]
 plex.home.lan
+
+[upgradinatorr]
+upgradinatorr.home.lan

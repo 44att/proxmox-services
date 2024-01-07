@@ -162,6 +162,11 @@ variable "plex_lxcid" {
   default = 515
 }
 
+variable "upgradinatorr_lxcid" {
+  type    = number
+  default = 516
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -302,6 +307,11 @@ variable "plex_mac" {
   default = "3A:8F:F6:96:dC:84"
 }
 
+variable "upgradinatorr_mac" {
+  type    = string
+  default = "aa:4f:68:04:d0:19"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -401,6 +411,11 @@ variable "recyclarr_ip" {
 variable "plex_ip" {
   type    = string
   default = "192.168.1.40/24"
+}
+
+variable "upgradinatorr_ip" {
+  type    = string
+  default = "192.168.1.41/24"
 }
 
 variable "docker_ip" {

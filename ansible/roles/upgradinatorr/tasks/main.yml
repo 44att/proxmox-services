@@ -1,0 +1,54 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Install packages
+  apt:
+    pkg:
+      - gnupg
+    state: latest
+
+- name: Add Microsoft repository keys
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  register: status_microsoft_repo
+
+- name: Add the Microsoft repository
+  apt_repository:
+    repo: deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+    state: present
+  register: status_microsoft_repo
+
+- name: Install Powershell
+  apt:
+    name: powershell
+    state: present
+    update_cache: "{{ status_microsoft_repo.changed }}"
+
+- name: Download Upgradinatorr
+  git:
+    repo: https://github.com/angrycuban13/Just-A-Bunch-Of-Starr-Scripts.git
+    dest: /opt/upgradinatorr
+    depth: 1
+    force: true
+    version: main
+
+- name: Create config file
+  template:
+    src: upgradinatorr.conf.j2
+    dest: /opt/upgradinatorr/Upgradinatorr/upgradinatorr.conf
+    mode: 0644
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "run upgradinatorr"
+    state: absent
+
+- name: Create run cron job
+  cron:
+    name: "run upgradinatorr"
+    weekday: "*"
+    minute: "0"
+    hour: "*/6"
+    job: "pwsh /opt/upgradinatorr/Upgradinatorr/upgradinatorr.ps1 -apps radarr,sonarr"

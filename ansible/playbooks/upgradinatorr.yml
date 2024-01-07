@@ -1,0 +1,5 @@
+---
+- hosts: upgradinatorr
+  roles:
+    - { role: common, tags: all }
+    - { role: upgradinatorr, tags: upgradinatorr }
