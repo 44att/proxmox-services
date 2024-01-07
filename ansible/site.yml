@@ -20,3 +20,4 @@
 - import_playbook: ./playbooks/crowdsec.yml
 - import_playbook: ./playbooks/recyclarr.yml
 - import_playbook: ./playbooks/threadfin.yml
+- import_playbook: ./playbooks/plex.yml

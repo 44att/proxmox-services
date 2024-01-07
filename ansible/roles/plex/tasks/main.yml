@@ -1,0 +1,47 @@
+---
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+      - curl
+    state: latest
+
+- name: Add Plex repository key
+  apt_key:
+    url: https://downloads.plex.tv/plex-keys/PlexSign.key
+    state: present
+  register: status_plex_repo
+
+- name: Add the Plex repository
+  apt_repository:
+    repo: deb https://downloads.plex.tv/repo/deb public main
+    state: present
+  register: status_plex_repo
+
+- name: Synchronize Plex config from backup source
+  synchronize:
+    src: "/Plex-data/"
+    dest: "/var/lib/plexmediaserver"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Install Plex Server
+  apt:
+    name: plexmediaserver
+    state: present
+    update_cache: "{{ status_plex_repo.changed }}"
+  notify:
+    - Start Plex
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup plex"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup plex"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/plexmediaserver/ /Plex-data"

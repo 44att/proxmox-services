@@ -157,6 +157,11 @@ variable "threadfin_lxcid" {
   default = 514
 }
 
+variable "plex_lxcid" {
+  type    = number
+  default = 515
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -292,6 +297,11 @@ variable "threadfin_mac" {
   default = "E2:80:96:E4:9E:7d"
 }
 
+variable "plex_mac" {
+  type    = string
+  default = "3A:8F:F6:96:dC:84"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -386,6 +396,11 @@ variable "navidrome_ip" {
 variable "recyclarr_ip" {
   type    = string
   default = "192.168.1.39/24"
+}
+
+variable "plex_ip" {
+  type    = string
+  default = "192.168.1.40/24"
 }
 
 variable "docker_ip" {

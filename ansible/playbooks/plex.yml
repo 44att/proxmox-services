@@ -1,0 +1,6 @@
+---
+- hosts: plex
+  roles:
+    - { role: common, tags: all }
+    - { role: nvidia, tags: all }
+    - { role: plex, tags: plex }
