@@ -152,7 +152,7 @@ variable "recyclarr_lxcid" {
   default = 513
 }
 
-variable "samba_lxcid" {
+variable "threadfin_lxcid" {
   type    = number
   default = 514
 }
@@ -180,6 +180,11 @@ variable "wireguard_lxcid" {
 variable "rclone_lxcid" {
   type    = number
   default = 519
+}
+
+variable "samba_lxcid" {
+  type    = number
+  default = 520
 }
 
 variable "crowdsec_lxcid" {
@@ -282,6 +287,11 @@ variable "recyclarr_mac" {
   default = "9A:02:CA:A5:37:8C"
 }
 
+variable "threadfin_mac" {
+  type    = string
+  default = "E2:80:96:E4:9E:7d"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -341,6 +351,12 @@ variable "qbittorrent_ip" {
   type    = string
   default = "192.168.10.31/24"
 }
+
+variable "threadfin_ip" {
+  type    = string
+  default = "192.168.10.32/24"
+}
+
 
 variable "bazarr_ip" {
   type    = string

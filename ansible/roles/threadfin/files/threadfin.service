@@ -1,0 +1,18 @@
+[Unit]
+Description=Threadfin Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=threadfin
+Group=threadfin
+Type=simple
+ExecStart=/opt/Threadfin/Threadfin -config=/var/lib/threadfin/
+ExecReload=/usr/bin/killall threadfin
+ExecStop=/usr/bin/killall threadfin
+KillMode=process
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+---
+- name: Start Threadfin
+  systemd:
+    name: threadfin
+    state: restarted
+    enabled: true

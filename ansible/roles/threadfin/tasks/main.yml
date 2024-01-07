@@ -1,0 +1,68 @@
+---
+- name: Create Threadfin group
+  group:
+    name: threadfin
+    state: present
+
+- name: Create Threadfin user
+  user:
+    name: threadfin
+    groups: threadfin
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Create Threadfin directories if they do not exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /var/lib/threadfin
+    - /opt/Threadfin
+
+- name: Install Threadfin
+  get_url:
+    url: https://github.com/Threadfin/Threadfin/releases/download/1.0.23/Threadfin_linux_amd64
+    dest: /opt/Threadfin/Threadfin
+    mode: +x
+
+- name: Synchronize Threadfin config from backup source
+  synchronize:
+    src: "/Threadfin-data/"
+    dest: "/var/lib/threadfin/"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Threadfin directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: threadfin
+    group: threadfin
+  loop:
+    - /opt/Threadfin
+    - /var/lib/threadfin
+
+- name: Copy Threadfin systemd service file
+  copy:
+    src: threadfin.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Threadfin
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup threadfin"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup threadfin"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/threadfin/ /Threadfin-data"
