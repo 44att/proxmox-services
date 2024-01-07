@@ -19,8 +19,8 @@ resource "proxmox_lxc" "threadfin" {
   mountpoint {
     mp      = "/Threadfin-data"
     size    = "4G"
-    slot    = 1
-    key     = "1"
+    slot    = 0
+    key     = "0"
     storage = "/mnt/pve/app_data/threadfin"
     volume  = "/mnt/pve/app_data/threadfin"
   }
