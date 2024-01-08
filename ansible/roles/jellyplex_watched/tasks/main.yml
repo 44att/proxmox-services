@@ -1,0 +1,59 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Install packages
+  apt:
+    pkg:
+      - python3-dev
+      - python3-pip
+      - python3-distutils
+    state: latest
+
+- name: Download JellyPlex-Watched
+  git:
+    repo: https://github.com/luigi311/JellyPlex-Watched.git
+    dest: /opt/jellyplex_watched
+    depth: 1
+    force: true
+    version: main
+
+- name: Create config file
+  template:
+    src: .env.j2
+    dest: /opt/jellyplex_watched/.env
+    mode: 0644
+
+- name: Install specified python requirements
+  pip:
+    requirements: /opt/jellyplex_watched/requirements.txt
+
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/jellyplex_watched
+    dest: /etc/logrotate.d/jellyplex_watched
+
+- name: Run logrotate
+  shell: logrotate /etc/logrotate.conf
+
+- name: Remove old cron jobs if they exist
+  cron:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "run jellyplex"
+    - "logrotate"
+
+- name: Create run jellyplex cron job
+  cron:
+    name: "run jellyplex"
+    special_time: hourly
+    job: "python3 /opt/jellyplex_watched/main.py > /dev/null"
+
+- name: Create logrotate cron job
+  cron:
+    name: "logrotate"
+    weekday: "*"
+    minute: "*/10"
+    hour: "*"
+    job: "logrotate /etc/logrotate.conf"

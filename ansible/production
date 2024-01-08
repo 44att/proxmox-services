@@ -21,6 +21,7 @@ crowdsec.home.lan
 threadfin.home.lan
 plex.home.lan
 upgradinatorr.home.lan
+jellyplex-watched.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -85,3 +86,6 @@ plex.home.lan
 
 [upgradinatorr]
 upgradinatorr.home.lan
+
+[jellyplex_watched]
+jellyplex-watched.home.lan

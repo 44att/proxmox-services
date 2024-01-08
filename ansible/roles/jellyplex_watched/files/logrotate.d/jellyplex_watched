@@ -1,0 +1,6 @@
+/root/*.log {
+  size 10M
+  rotate 5
+  missingok
+  notifempty
+}

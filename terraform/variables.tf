@@ -167,6 +167,11 @@ variable "upgradinatorr_lxcid" {
   default = 516
 }
 
+variable "jellyplex-watched_lxcid" {
+  type    = number
+  default = 517
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -312,6 +317,11 @@ variable "upgradinatorr_mac" {
   default = "aa:4f:68:04:d0:19"
 }
 
+variable "jellyplex-watched_mac" {
+  type    = string
+  default = "F6:28:9F:8D:56:B2"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -416,6 +426,11 @@ variable "plex_ip" {
 variable "upgradinatorr_ip" {
   type    = string
   default = "192.168.1.41/24"
+}
+
+variable "jellyplex-watched_ip" {
+  type    = string
+  default = "192.168.1.42/24"
 }
 
 variable "docker_ip" {
