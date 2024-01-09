@@ -8,14 +8,14 @@ resource "proxmox_lxc" "plex" {
   start           = true
   onboot          = true
   vmid            = var.plex_lxcid
-  memory          = 1024
+  memory          = 4096
   cores           = 2
   nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
-    size    = "4G"
+    size    = "20G"
   }
 
   mountpoint {
