@@ -1,0 +1,15 @@
+/var/lib/firefly/backups/firefly_db.sql.gz {
+    daily
+    rotate 3
+    nocompress
+    dateext
+    dateformat .%Y-%m-%d
+    dateyesterday
+    missingok
+    extension .sql.gz
+    create 640 root root
+    sharedscripts
+    postrotate
+        mysqldump -u root firefly --single-transaction | gzip > /var/lib/firefly/backups/firefly_db.sql.gz
+    endscript
+}

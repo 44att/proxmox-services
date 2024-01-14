@@ -1,0 +1,5 @@
+---
+- hosts: firefly
+  roles:
+    - { role: common, tags: all }
+    - { role: firefly, tags: firefly }

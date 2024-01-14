@@ -1,0 +1,263 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Firefly group
+  group:
+    name: firefly
+    state: present
+
+- name: Create Firefly user
+  user:
+    name: firefly
+    groups: firefly
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - curl
+      - gnupg
+      - nginx
+      - mysql-server
+      - python3-pymysql
+      - unrar
+      - unzip
+    state: latest
+
+- name: Add the PHP repository
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install PHP
+  apt:
+    pkg:
+      - php8.3-fpm
+      - php-bcmath
+      - php-curl
+      - php-mbstring 
+      - php-mysql
+      - php-intl
+      - php-xml
+      - php-zip
+    state: latest
+
+- name: Create Firefly directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /var/www/html/firefly
+    - /var/lib/firefly/backups
+
+- name: Synchronize Firefly dumps from backup source
+  synchronize:
+    src: "/Firefly-data/db/"
+    dest: "/var/lib/firefly/backups"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of backups directory
+  file:
+    path: /var/lib/firefly/backups
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Create nginx log files
+  file:
+    path: "{{ item }}"
+    state: touch
+    owner: www-data
+    group: adm
+  loop:
+    - /var/log/nginx/firefly.access.log
+    - /var/log/nginx/firefly.error.log
+
+- name: Copy nginx config file
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/sites-available/firefly
+  notify: Restart Nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/firefly
+    dest: /etc/nginx/sites-enabled/firefly
+    state: link
+  notify: Reload Nginx
+
+- name: Remove "default" nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx
+
+- name: Save MySQL root password in .my.cnf file
+  template:
+    src: .my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    mode: 0600
+
+- name: Set MySQL root password
+  mysql_user: 
+    name: root 
+    password: "{{ firefly_db_root_password }}"
+    check_implicit_admin: true
+    host_all: true
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Removes all MySQL anonymous user accounts
+  mysql_user:
+    name: ''
+    state: absent
+    host_all: true
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Removes the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create Firefly database
+  mysql_db:
+    name: firefly
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create Firefly database user
+  mysql_user:
+    name: firefly
+    password: "{{ firefly_db_password }}"
+    priv:
+      'firefly.*': 'ALL,GRANT'
+
+- name: Read Composer checksum
+  shell: curl https://getcomposer.org/download/latest-stable/composer.phar.sha256
+  register: composer_checksum
+
+- name: Download composer
+  get_url:
+    url: https://getcomposer.org/download/latest-stable/composer.phar
+    dest: /usr/local/bin/composer
+    owner: firefly
+    group: firefly
+    force: true
+    checksum: "sha256:{{ composer_checksum.stdout }}"
+    mode: 0755
+
+- name: Check if Firefly is already installed
+  find:
+    paths: '/var/www/html/firefly/'
+    file_type: any
+  register: firefly_installed
+
+- name: Install Firefly
+  when: firefly_installed.matched == 0
+  shell:
+    chdir: /var/www/html
+    cmd: composer create-project grumpydictator/firefly-iii --no-interaction --no-dev --prefer-dist firefly 6.1.6
+
+- name: Recursively change ownership of Firefly directory
+  file:
+    path: /var/www/html/firefly
+    state: directory
+    recurse: true
+    owner: www-data
+    group: www-data
+
+- name: Modify file permissions on Firefly storage directory
+  file:
+    path: /var/www/html/firefly/storage
+    state: directory
+    mode: 0775
+
+- name: Copy Firefly .env file
+  template: 
+    src: .env.j2
+    dest: /var/www/html/firefly/.env
+    owner: www-data
+    group: www-data
+
+- name: Setup the Firefly application
+  when: firefly_installed.matched == 0
+  shell:
+    chdir: /var/www/html/firefly
+    cmd: "{{ item }}"
+  loop:
+    - php artisan key:generate
+    - php artisan firefly-iii:upgrade-database
+    - php artisan firefly-iii:correct-database
+    - php artisan firefly-iii:report-integrity
+    - php artisan passport:install
+
+- name: Synchronize Firefly data from backup source
+  when: firefly_installed.matched == 0
+  synchronize:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  delegate_to: "{{ inventory_hostname }}"
+  loop:
+    - { src: "/Firefly-data/storage/database/",  dest: "/var/www/html/firefly/storage/database" }
+    - { src: "/Firefly-data/storage/upload/",  dest: "/var/www/html/firefly/storage/upload" }
+
+- name: Restore mysql database from backup
+  when: firefly_installed.matched == 0
+  mysql_db:
+    name: firefly
+    state: import
+    target: /var/lib/firefly/backups/firefly_db.sql.gz
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: "UFW - Allow nginx HTTP"
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/mysql-backup
+    dest: /etc/logrotate.d/mysql-backup
+
+- name: Remove old cron jobs if they exist
+  cron:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "backup database files"
+    - "backup upload files"
+    - "backup mysql dumps"
+
+- name: Create backup database files cron job
+  cron:
+    name: "backup database files"
+    special_time: daily
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/www/html/firefly/storage/database/ /Firefly-data/storage/database"
+
+- name: Create backup upload files cron job
+  cron:
+    name: "backup upload files"
+    special_time: daily
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/www/html/firefly/storage/upload/ /Firefly-data/storage/upload"
+
+- name: Create backup mysql dumps cron job
+  cron:
+    name: "backup mysql dumps"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/firefly/backups/ /Firefly-data/db"

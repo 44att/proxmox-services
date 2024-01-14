@@ -172,6 +172,11 @@ variable "jellyplex-watched_lxcid" {
   default = 517
 }
 
+variable "firefly_lxcid" {
+  type    = number
+  default = 518
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -322,6 +327,11 @@ variable "jellyplex-watched_mac" {
   default = "F6:28:9F:8D:56:B2"
 }
 
+variable "firefly_mac" {
+  type    = string
+  default = "46:62:01:F6:A6:68"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -432,6 +442,12 @@ variable "jellyplex-watched_ip" {
   type    = string
   default = "192.168.1.42/24"
 }
+
+variable "firefly_ip" {
+  type    = string
+  default = "192.168.1.43/24"
+}
+
 
 variable "docker_ip" {
   type    = string
