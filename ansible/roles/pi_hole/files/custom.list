@@ -26,6 +26,7 @@
 192.168.1.29 tuner.home.lan
 192.168.1.29 watch.home.lan
 192.168.1.29 finance.home.lan
+192.168.1.29 plex-stats.home.lan
 192.168.1.30 jellyfin.home.lan
 192.168.1.31 jellyseerr.home.lan
 192.168.1.32 prowlarr.home.lan
@@ -40,6 +41,7 @@
 192.168.1.41 upgradinatorr.home.lan
 192.168.1.42 jellyplex-watched.home.lan
 192.168.1.43 firefly.home.lan
+192.168.1.44 tautulli.home.lan
 192.168.10.30 sabnzbd.home.lan
 192.168.10.31 qbittorrent.home.lan
 192.168.10.32 threadfin.home.lan

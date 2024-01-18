@@ -1,0 +1,12 @@
+---
+http:
+  routers:
+    to-tautulli:
+      rule: "Host(`plex-stats.home.lan`)"
+      service: tautulli
+
+  services:
+    tautulli:
+      loadBalancer:
+        servers:
+          - url: http://tautulli.home.lan:8181

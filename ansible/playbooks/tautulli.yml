@@ -1,0 +1,5 @@
+---
+- hosts: tautulli
+  roles:
+    - { role: common, tags: all }
+    - { role: tautulli, tags: tautulli }

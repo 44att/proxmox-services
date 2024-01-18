@@ -177,6 +177,11 @@ variable "firefly_lxcid" {
   default = 518
 }
 
+variable "tautulli_lxcid" {
+  type    = number
+  default = 519
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -332,6 +337,11 @@ variable "firefly_mac" {
   default = "46:62:01:F6:A6:68"
 }
 
+variable "tautulli_mac" {
+  type    = string
+  default = "52:A4:13:C1:D6:77"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -448,6 +458,10 @@ variable "firefly_ip" {
   default = "192.168.1.43/24"
 }
 
+variable "tautulli_ip" {
+  type    = string
+  default = "192.168.1.44/24"
+}
 
 variable "docker_ip" {
   type    = string

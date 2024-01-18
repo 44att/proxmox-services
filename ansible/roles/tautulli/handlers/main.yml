@@ -1,0 +1,5 @@
+- name: Start Tautulli
+  systemd:
+    name: tautulli
+    state: restarted
+    daemon_reload: true
