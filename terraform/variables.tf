@@ -182,6 +182,11 @@ variable "tautulli_lxcid" {
   default = 519
 }
 
+variable "uptime-kuma_lxcid" {
+  type    = number
+  default = 520
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -342,6 +347,11 @@ variable "tautulli_mac" {
   default = "52:A4:13:C1:D6:77"
 }
 
+variable "uptime-kuma_mac" {
+  type    = string
+  default = "C2:87:EA:D6:12:8D"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -461,6 +471,11 @@ variable "firefly_ip" {
 variable "tautulli_ip" {
   type    = string
   default = "192.168.1.44/24"
+}
+
+variable "uptime-kuma_ip" {
+  type    = string
+  default = "192.168.1.45/24"
 }
 
 variable "docker_ip" {

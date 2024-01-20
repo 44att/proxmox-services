@@ -1,0 +1,5 @@
+---
+- hosts: uptime_kuma
+  roles:
+    - { role: common, tags: all }
+    - { role: uptime_kuma, tags: uptime_kuma }

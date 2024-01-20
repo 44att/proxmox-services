@@ -24,6 +24,7 @@ upgradinatorr.home.lan
 jellyplex-watched.home.lan
 firefly.home.lan
 tautulli.home.lan
+uptime-kuma.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -97,3 +98,6 @@ firefly.home.lan
 
 [tautulli]
 tautulli.home.lan
+
+[uptime_kuma]
+uptime-kuma.home.lan

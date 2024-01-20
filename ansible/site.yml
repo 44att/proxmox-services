@@ -25,3 +25,4 @@
 - import_playbook: ./playbooks/jellyplex-watched.yml
 - import_playbook: ./playbooks/firefly.yml
 - import_playbook: ./playbooks/tautulli.yml
+- import_playbook: ./playbooks/uptime-kuma.yml

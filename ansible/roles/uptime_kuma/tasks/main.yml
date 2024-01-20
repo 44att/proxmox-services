@@ -1,0 +1,123 @@
+---
+- name: Create Uptime Kuma group
+  group:
+    name: uptime-kuma
+    state: present
+
+- name: Create Uptime Kuma user
+  user:
+    name: uptime-kuma
+    groups: uptime-kuma
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+    state: latest
+
+- name: Create Uptime Kuma directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/uptime-kuma
+    - /etc/uptime-kuma
+
+- name: Add Uptime Kuma directory as safe in git config
+  shell:
+    cmd: git config --global --add safe.directory /opt/uptime-kuma
+
+- name: Install the gpg keys for nodejs LTS
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+    
+- name: Add the nodejs LTS repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install nodejs package
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install npm and pm2
+  shell: "{{ item }}"
+  loop:
+    - npm install npm@9 pm2 -g --silent
+    - pm2 install pm2-logrotate --silent
+
+- name: Download Uptime Kuma
+  git:
+    repo: https://github.com/louislam/uptime-kuma.git
+    dest: /opt/uptime-kuma
+    depth: 1
+    force: true
+    version: master
+
+- name: Copy Uptime Kuma .env file
+  copy: 
+    src: .env
+    dest: /opt/uptime-kuma/.env
+
+- name: Synchronize Uptime Kuma data from backup source
+  synchronize:
+    src: "/UK-data/"
+    dest: "/etc/uptime-kuma"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Uptime Kuma directory
+  file:
+    path: /opt/uptime-kuma/
+    state: directory
+    recurse: true
+    owner: uptime-kuma
+    group: uptime-kuma
+
+- name: Setup Uptime Kuma
+  shell:
+    chdir: /opt/uptime-kuma
+    cmd: "{{ item }}"
+  loop:
+    - git fetch --all --tags --prune
+    - npm run setup --silent
+
+- name: Stop Uptime Kuma process if it's already running
+  ignore_errors: true
+  shell:
+    chdir: /opt/uptime-kuma
+    cmd: "pm2 delete uptime-kuma --silent"
+   
+- name: Start Uptime Kuma
+  shell:
+    chdir: /opt/uptime-kuma
+    cmd: "{{ item }}"
+  loop:
+    - pm2 start server/server.js --name uptime-kuma --silent
+    - pm2 save --silent
+    - pm2 startup --silent
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup uptime kuma"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup uptime kuma"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /etc/uptime-kuma/ /UK-data"
