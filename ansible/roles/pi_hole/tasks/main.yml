@@ -1,4 +1,9 @@
 ---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+  tags:
+    - dns
+
 - name: Install unbound
   apt:
     pkg:
@@ -38,13 +43,19 @@
     dest: /etc/pihole/setupVars.conf
   register: setup_conf_copied
 
-- name: Copy Pi-hole Local DNS Records config
+- name: Copy Pi-hole FTL config
   copy:
-    src: "{{ item }}"
+    src: pihole-FTL.conf
     dest: /etc/pihole/
-  loop:
-    - custom.list
-    - pihole-FTL.conf
+  notify:
+    - Restart Pi-hole
+  tags:
+    - dns
+
+- name: Copy Pi-hole local DNS config
+  template:
+    src: custom.list.j2
+    dest: /etc/pihole/custom.list
   notify:
     - Restart Pi-hole
   tags:

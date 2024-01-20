@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-sonarr-http:
+      rule: "Host(`tv.{{ external_domain }}`)"
+      service: sonarr
+      middlewares:
+        - https-redirect
+
+    to-sonarr:
+      rule: "Host(`tv.{{ external_domain }}`)"
+      service: sonarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    sonarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.34:8989

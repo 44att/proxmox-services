@@ -1,0 +1,18 @@
+---
+http:
+  routers:
+    api-http:
+      rule: Host(`traefik.{{ external_domain }}`)
+      service: api@internal
+      middlewares:
+        - https-redirect
+
+    api:
+      rule: Host(`traefik.{{ external_domain }}`)
+      service: api@internal
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"

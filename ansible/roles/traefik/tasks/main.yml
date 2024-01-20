@@ -31,8 +31,8 @@
 
 - name: Remove old Traefik config
   file:
-    state: absent
     path: /etc/traefik/
+    state: absent
 
 - name: Copy Traefik config
   copy:
@@ -44,12 +44,10 @@
 
 - name: Create config files from templates
   template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}" 
-    mode: 0644
-  loop:
-    - { src: jellyfin.yml.j2, dest: /etc/traefik/config/jellyfin.yml }
-    - { src: navidrome.yml.j2, dest: /etc/traefik/config/navidrome.yml }
+    src: "{{ item }}"
+    dest: /etc/traefik/config/{{ item | basename | regex_replace('\.j2$', '') }}
+  with_fileglob:
+    - ../templates/services/*.j2
   notify:
     - Restart Traefik
 

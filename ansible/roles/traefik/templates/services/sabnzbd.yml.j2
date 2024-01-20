@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-sabnzbd-http:
+      rule: "Host(`nzbs.{{ external_domain }}`)"
+      service: sabnzbd
+      middlewares:
+        - https-redirect
+
+    to-sabnzbd:
+      rule: "Host(`nzbs.{{ external_domain }}`)"
+      service: sabnzbd
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    sabnzbd:
+      loadBalancer:
+        servers:
+          - url: http://192.168.10.30:8080

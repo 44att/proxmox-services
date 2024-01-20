@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-firefly-http:
+      rule: "Host(`finance.{{ external_domain }}`)"
+      service: firefly
+      middlewares:
+        - https-redirect
+      
+    to-firefly:
+      rule: "Host(`finance.{{ external_domain }}`)"
+      service: firefly
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    firefly:
+      loadBalancer:
+        servers:
+          - url: http://firefly.home.lan

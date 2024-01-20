@@ -1,16 +1,13 @@
 ---
 http:
-  middlewares:
-    cloudflarewarp:
-      plugin:
-        cloudflarewarp:
-          disableDefault: false
-
   routers:
-    to-navidrome:
-      rule: "Host(`music-server.home.lan`)"
+    to-navidrome-http:
+      rule: "Host(`music.{{ external_domain }}`)"
       service: navidrome
-    to-navidrome-secure:
+      middlewares:
+        - https-redirect
+
+    to-navidrome:
       rule: "Host(`music.{{ external_domain }}`)"
       service: navidrome
       tls:
@@ -19,8 +16,6 @@ http:
           - main: "{{ external_domain }}"
             sans:
               - "*.{{ external_domain }}"
-      middlewares:
-        - cloudflarewarp
 
   services:
     navidrome:

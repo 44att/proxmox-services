@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-tdarr-http:
+      rule: "Host(`transcode.{{ external_domain }}`)"
+      service: tdarr
+      middlewares:
+        - https-redirect
+
+    to-tdarr:
+      rule: "Host(`transcode.{{ external_domain }}`)"
+      service: tdarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    tdarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.37:8265

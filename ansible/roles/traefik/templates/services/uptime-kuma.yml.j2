@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-uptime-kuma-http:
+      rule: "Host(`monitoring.{{ external_domain }}`)"
+      service: uptime-kuma
+      middlewares:
+        - https-redirect
+
+    to-uptime-kuma:
+      rule: "Host(`monitoring.{{ external_domain }}`)"
+      service: uptime-kuma
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    uptime-kuma:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.45:3001

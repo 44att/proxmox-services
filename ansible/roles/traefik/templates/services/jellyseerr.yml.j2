@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-jellyseerr-http:
+      rule: "Host(`requests.{{ external_domain }}`)"
+      service: jellyseerr
+      middlewares:
+        - https-redirect
+
+    to-jellyseerr:
+      rule: "Host(`requests.{{ external_domain }}`)"
+      service: jellyseerr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    jellyseerr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.31:5055

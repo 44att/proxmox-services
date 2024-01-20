@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-lidarr-http:
+      rule: "Host(`music.{{ external_domain }}`)"
+      service: lidarr
+      middlewares:
+        - https-redirect
+
+    to-lidarr:
+      rule: "Host(`music.{{ external_domain }}`)"
+      service: lidarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    lidarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.36:8686

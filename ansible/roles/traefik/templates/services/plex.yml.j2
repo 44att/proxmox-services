@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-plex-http:
+      rule: "Host(`watch.{{ external_domain }}`)"
+      service: plex
+      middlewares:
+        - https-redirect
+
+    to-plex:
+      rule: "Host(`watch.{{ external_domain }}`)"
+      service: plex
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    plex:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.40:32400

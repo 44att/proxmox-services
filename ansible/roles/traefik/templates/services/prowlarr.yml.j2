@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-prowlarr-http:
+      rule: "Host(`search.{{ external_domain }}`)"
+      service: prowlarr
+      middlewares:
+        - https-redirect
+
+    to-prowlarr:
+      rule: "Host(`search.{{ external_domain }}`)"
+      service: prowlarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    prowlarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.32:9696

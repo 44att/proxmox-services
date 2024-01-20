@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-bazarr-http:
+      rule: "Host(`subtitles.{{ external_domain }}`)"
+      service: bazarr
+      middlewares:
+        - https-redirect
+
+    to-bazarr:
+      rule: "Host(`subtitles.{{ external_domain }}`)"
+      service: bazarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    bazarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.33:6767

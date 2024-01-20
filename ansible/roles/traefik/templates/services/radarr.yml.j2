@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-radarr-http:
+      rule: "Host(`movies.{{ external_domain }}`)"
+      service: radarr
+      middlewares:
+        - https-redirect
+
+    to-radarr:
+      rule: "Host(`movies.{{ external_domain }}`)"
+      service: radarr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    radarr:
+      loadBalancer:
+        servers:
+          - url: http://192.168.1.35:7878

@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-qbittorrent-http:
+      rule: "Host(`torrents.{{ external_domain }}`)"
+      service: qbittorrent
+      middlewares:
+        - https-redirect
+
+    to-qbittorrent:
+      rule: "Host(`torrents.{{ external_domain }}`)"
+      service: qbittorrent
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    qbittorrent:
+      loadBalancer:
+        servers:
+          - url: http://192.168.10.31:8080

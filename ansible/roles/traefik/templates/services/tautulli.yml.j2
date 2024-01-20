@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-tautulli-http:
+      rule: "Host(`plex-stats.{{ external_domain }}`)"
+      service: tautulli
+      middlewares:
+        - https-redirect
+
+    to-tautulli:
+      rule: "Host(`plex-stats.{{ external_domain }}`)"
+      service: tautulli
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    tautulli:
+      loadBalancer:
+        servers:
+          - url: http://tautulli.home.lan:8181
