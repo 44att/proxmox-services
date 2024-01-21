@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-navidrome-http:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-pi-hole-http:
+      rule: "Host(`pi-hole.{{ external_domain }}`)"
+      service: pi-hole
       middlewares:
         - https-redirect
 
-    to-navidrome:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-pi-hole:
+      rule: "Host(`pi-hole.{{ external_domain }}`)"
+      service: pi-hole
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,7 +18,7 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    navidrome:
+    pi-hole:
       loadBalancer:
         servers:
-          - url: http://192.168.1.38:4533
+          - url: http://192.168.1.20

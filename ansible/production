@@ -2,7 +2,7 @@
 192.168.1.20
 192.168.1.21
 ; 192.168.1.39
-homepage.home.lan
+dashboard.home.lan
 network.home.lan
 traefik.home.lan
 jellyfin.home.lan
@@ -34,7 +34,7 @@ uptime-kuma.home.lan
 ; 192.168.1.39
 
 [homepage]
-homepage.home.lan
+dashboard.home.lan
 
 [network]
 network.home.lan

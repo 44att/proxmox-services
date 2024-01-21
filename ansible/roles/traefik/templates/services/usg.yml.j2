@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-sabnzbd-http:
-      rule: "Host(`nzbs.{{ external_domain }}`)"
-      service: sabnzbd
+    to-usg-http:
+      rule: "Host(`usg.{{ external_domain }}`)"
+      service: usg
       middlewares:
         - https-redirect
 
-    to-sabnzbd:
-      rule: "Host(`nzbs.{{ external_domain }}`)"
-      service: sabnzbd
+    to-usg:
+      rule: "Host(`usg.{{ external_domain }}`)"
+      service: usg
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,8 +18,8 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    sabnzbd:
+    usg:
       loadBalancer:
         serversTransport: insecure-transport
         servers:
-          - url: https://192.168.10.30:8080
+          - url: https://192.168.1.1

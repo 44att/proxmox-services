@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-navidrome-http:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-modem-http:
+      rule: "Host(`modem.{{ external_domain }}`)"
+      service: modem
       middlewares:
         - https-redirect
 
-    to-navidrome:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-modem:
+      rule: "Host(`modem.{{ external_domain }}`)"
+      service: modem
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,7 +18,7 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    navidrome:
+    modem:
       loadBalancer:
         servers:
-          - url: http://192.168.1.38:4533
+          - url: http://192.168.2.1

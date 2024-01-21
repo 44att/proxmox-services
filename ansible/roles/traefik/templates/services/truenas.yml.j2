@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-navidrome-http:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-truenas-http:
+      rule: "Host(`truenas.{{ external_domain }}`)"
+      service: truenas
       middlewares:
         - https-redirect
 
-    to-navidrome:
-      rule: "Host(`music-server.{{ external_domain }}`)"
-      service: navidrome
+    to-truenas:
+      rule: "Host(`truenas.{{ external_domain }}`)"
+      service: truenas
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,7 +18,7 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    navidrome:
+    truenas:
       loadBalancer:
         servers:
-          - url: http://192.168.1.38:4533
+          - url: http://192.168.1.12
