@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-tvheadend-http:
+      rule: "Host(`streaming.{{ external_domain }}`)"
+      service: tvheadend
+      middlewares:
+        - https-redirect
+
+    to-tvheadend:
+      rule: "Host(`streaming.{{ external_domain }}`)"
+      service: tvheadend
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    tvheadend:
+      loadBalancer:
+        servers:
+          - url: http://192.168.10.33:9981

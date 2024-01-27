@@ -1,0 +1,172 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Tvheadend group
+  group:
+    name: tvheadend
+    state: present
+
+- name: Create Tvheadend user
+  user:
+    name: tvheadend
+    groups: tvheadend
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+      - python3-pip
+    state: latest
+
+- name: Install pip python packages
+  pip:
+    name:
+      - requests
+      - lxml
+      - python-dateutil
+      - tzlocal
+
+- name: Create directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/m3u-epg-editor
+    - /var/lib/iptv
+
+- name: Download m3u epg editor
+  git:
+    repo: https://github.com/bebo-dot-dev/m3u-epg-editor.git
+    dest: /opt/m3u-epg-editor
+    depth: 1
+    force: true
+    version: main
+
+- name: Create m3u epg editor config file
+  template:
+    src: config.json.j2
+    dest: /opt/m3u-epg-editor/config.json
+    mode: 0644
+
+- name: Copy shell script to generate m3u files
+  copy:
+    src: generate-m3u.sh
+    dest: /root/generate-m3u.sh
+    mode: +x
+
+- name: Build m3u files
+  shell:
+    cmd: /root/generate-m3u.sh > /dev/null 2>&1
+
+- name: Install the gpg keys for Tvheadend
+  apt_key:
+    url: "https://dl.cloudsmith.io/public/tvheadend/tvheadend/gpg.C6CC06BD69B430C6.key"
+    state: present
+    keyring: /usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg
+
+- name: Add the Tvheadend LTS repository
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop:
+    - "deb [signed-by=/usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg] https://dl.cloudsmith.io/public/tvheadend/tvheadend/deb/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
+    - "deb-src [signed-by=/usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg] https://dl.cloudsmith.io/public/tvheadend/tvheadend/deb/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Synchronize Tvheadend config from backup source
+  synchronize:
+    src: "/Tvheadend-data/"
+    dest: "/var/lib/tvheadend"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Install Tvheadend package
+  apt:
+    pkg:
+      - tvheadend
+    state: latest
+
+- name: Install tv_grab_file Grabber Module
+  get_url:
+    url: https://raw.githubusercontent.com/b-jesch/tv_grab_file/master/tv_grab_file
+    dest: /usr/bin
+    owner: root
+    group: root
+    mode: a+rx
+  notify: Restart Tvheadend
+
+- name: Recursively change ownership of Tvheadend directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    recurse: true
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /var/lib/tvheadend, owner: hts, group: hts, mode: "0750" }
+    - { path: /var/lib/tvheadend/.xmltv, owner: hts, group: video, mode: "0777" }
+    - { path: /var/lib/tvheadend/accesscontrol, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/bouquet, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/caclient, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/channel, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/codec, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/dvr, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/epggrab, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/input, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/passwd, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/profile, owner: hts, group: video, mode: "0700" }
+    - { path: /var/lib/tvheadend/recordings, owner: hts, group: hts, mode: "0755" }
+
+- name: Set permissions on Tvheadend files
+  file:
+    path: "{{ item.path }}"
+    state: file
+    owner: hts
+    group: video
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /var/lib/tvheadend/.lock, mode: "0644" }
+    - { path: /var/lib/tvheadend/config, mode: "0600" }
+    - { path: /var/lib/tvheadend/epgdb.v3, mode: "0600" }
+
+- name: Create Tvheadend admin credentials
+  template:
+    src: superuser.j2
+    dest: /var/lib/tvheadend/superuser
+    owner: hts
+    group: hts
+    mode: 0600
+  notify: Restart Tvheadend
+
+- name: Remove old cron jobs if they exist
+  cron:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "backup tvheadend"
+    - "generate m3u"
+
+- name: Create backup cron job
+  cron:
+    name: "backup tvheadend"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/tvheadend/ /Tvheadend-data"
+
+- name: Create generate m3u cron job
+  cron:
+    name: "generate m3u"
+    special_time: daily
+    job: "/root/generate-m3u.sh > /dev/null 2>&1"

@@ -187,6 +187,11 @@ variable "uptime-kuma_lxcid" {
   default = 520
 }
 
+variable "tvheadend_lxcid" {
+  type    = number
+  default = 521
+}
+
 variable "docker_lxcid" {
   type    = number
   default = 515
@@ -352,6 +357,11 @@ variable "uptime-kuma_mac" {
   default = "C2:87:EA:D6:12:8D"
 }
 
+variable "tvheadend_mac" {
+  type    = string
+  default = "3A:E9:08:DD:A5:44"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -417,6 +427,10 @@ variable "threadfin_ip" {
   default = "192.168.10.32/24"
 }
 
+variable "tvheadend_ip" {
+  type    = string
+  default = "192.168.10.33/24"
+}
 
 variable "bazarr_ip" {
   type    = string

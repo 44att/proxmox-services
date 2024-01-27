@@ -1,0 +1,5 @@
+---
+- hosts: tvheadend
+  roles:
+    - { role: common, tags: all }
+    - { role: tvheadend, tags: tvheadend }

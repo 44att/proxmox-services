@@ -25,6 +25,7 @@ jellyplex-watched.home.lan
 firefly.home.lan
 tautulli.home.lan
 uptime-kuma.home.lan
+tvheadend.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -101,3 +102,6 @@ tautulli.home.lan
 
 [uptime_kuma]
 uptime-kuma.home.lan
+
+[tvheadend]
+tvheadend.home.lan
