@@ -19,7 +19,7 @@
 - import_playbook: ./playbooks/navidrome.yml
 - import_playbook: ./playbooks/crowdsec.yml
 - import_playbook: ./playbooks/recyclarr.yml
-- import_playbook: ./playbooks/threadfin.yml
+# - import_playbook: ./playbooks/threadfin.yml
 - import_playbook: ./playbooks/plex.yml
 - import_playbook: ./playbooks/upgradinatorr.yml
 - import_playbook: ./playbooks/jellyplex-watched.yml

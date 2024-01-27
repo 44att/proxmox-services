@@ -152,11 +152,6 @@ variable "recyclarr_lxcid" {
   default = 513
 }
 
-variable "threadfin_lxcid" {
-  type    = number
-  default = 514
-}
-
 variable "plex_lxcid" {
   type    = number
   default = 515
@@ -322,11 +317,6 @@ variable "recyclarr_mac" {
   default = "9A:02:CA:A5:37:8C"
 }
 
-variable "threadfin_mac" {
-  type    = string
-  default = "E2:80:96:E4:9E:7d"
-}
-
 variable "plex_mac" {
   type    = string
   default = "3A:8F:F6:96:dC:84"
@@ -420,11 +410,6 @@ variable "sabnzbd_ip" {
 variable "qbittorrent_ip" {
   type    = string
   default = "192.168.10.31/24"
-}
-
-variable "threadfin_ip" {
-  type    = string
-  default = "192.168.10.32/24"
 }
 
 variable "tvheadend_ip" {
