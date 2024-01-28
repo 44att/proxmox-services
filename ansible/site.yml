@@ -27,3 +27,4 @@
 - import_playbook: ./playbooks/tautulli.yml
 - import_playbook: ./playbooks/uptime-kuma.yml
 - import_playbook: ./playbooks/tvheadend.yml
+- import_playbook: ./playbooks/antennas.yml

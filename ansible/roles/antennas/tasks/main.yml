@@ -1,0 +1,93 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Antennas group
+  group:
+    name: antennas
+    state: present
+
+- name: Create Antennas user
+  user:
+    name: antennas
+    groups: antennas
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - gnupg
+    state: latest
+
+- name: Create antennas directories if they don't exist
+  file:
+    path: /opt/antennas
+    state: directory
+    mode: 0755
+
+- name: Add Antennas directory as safe in git config
+  shell:
+    cmd: git config --global --add safe.directory /opt/antennas
+
+- name: Install the gpg keys for nodejs LTS
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+    
+- name: Add the nodejs LTS repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
+- name: Install nodejs package
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install pm2
+  shell: "{{ item }}"
+  loop:
+    - npm install pm2 -g --silent
+    - pm2 install pm2-logrotate --silent
+
+- name: Download Antennas
+  git:
+    repo: https://github.com/jfarseneau/antennas.git
+    dest: /opt/antennas
+    depth: 1
+    force: true
+    version: main
+
+- name: Create Antennas config file
+  template: 
+    src: config.yml.j2
+    dest: /opt/antennas/config/config.yml
+
+- name: Install Antennas
+  shell:
+    chdir: /opt/antennas
+    cmd: npm install --silent
+
+- name: Stop Antennas process if it's already running
+  ignore_errors: true
+  shell:
+    chdir: /opt/antennas
+    cmd: "pm2 delete antennas --silent"
+   
+- name: Start Antennas
+  shell:
+    chdir: /opt/antennas
+    cmd: "{{ item }}"
+  loop:
+    - pm2 start index.js --name antennas --silent
+    - pm2 save --silent
+    - pm2 startup --silent

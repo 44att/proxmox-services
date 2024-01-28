@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-antennas-http:
+      rule: "Host(`tuner.{{ external_domain }}`)"
+      service: antennas
+      middlewares:
+        - https-redirect
+
+    to-antennas:
+      rule: "Host(`tuner.{{ external_domain }}`)"
+      service: antennas
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    antennas:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.10.32:5004"

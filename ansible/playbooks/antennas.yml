@@ -1,0 +1,5 @@
+---
+- hosts: antennas
+  roles:
+    - { role: common, tags: all }
+    - { role: antennas, tags: antennas }

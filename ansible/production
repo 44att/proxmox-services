@@ -26,6 +26,7 @@ firefly.home.lan
 tautulli.home.lan
 uptime-kuma.home.lan
 tvheadend.home.lan
+antennas.home.lan
 
 [pi_hole]
 192.168.1.20
@@ -105,3 +106,6 @@ uptime-kuma.home.lan
 
 [tvheadend]
 tvheadend.home.lan
+
+[antennas]
+antennas.home.lan

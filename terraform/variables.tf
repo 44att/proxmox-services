@@ -152,6 +152,11 @@ variable "recyclarr_lxcid" {
   default = 513
 }
 
+variable "antennas_lxcid" {
+  type    = number
+  default = 514
+}
+
 variable "plex_lxcid" {
   type    = number
   default = 515
@@ -352,6 +357,11 @@ variable "tvheadend_mac" {
   default = "3A:E9:08:DD:A5:44"
 }
 
+variable "antennas_mac" {
+  type    = string
+  default = "96:F6:C9:Cd:6C:38"
+}
+
 variable "crowdsec_mac" {
   type    = string
   default = "7A:65:CB:DB:E0:12"
@@ -410,6 +420,11 @@ variable "sabnzbd_ip" {
 variable "qbittorrent_ip" {
   type    = string
   default = "192.168.10.31/24"
+}
+
+variable "antennas_ip" {
+  type    = string
+  default = "192.168.10.32/24"
 }
 
 variable "tvheadend_ip" {
