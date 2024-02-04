@@ -15,7 +15,7 @@ resource "proxmox_lxc" "plex" {
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
-    size    = "20G"
+    size    = "40G"
   }
 
   mountpoint {
