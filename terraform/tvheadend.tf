@@ -8,14 +8,14 @@ resource "proxmox_lxc" "tvheadend" {
   start           = true
   onboot          = true
   vmid            = var.tvheadend_lxcid
-  memory          = 4096
+  memory          = 8192
   cores           = 2
   nameserver      = var.gateway_ip_vlan_10
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
-    size    = "4G"
+    size    = "40G"
   }
 
   mountpoint {
@@ -40,6 +40,29 @@ resource "proxmox_lxc" "tvheadend" {
   lifecycle {
     ignore_changes = [
       mountpoint[0].storage
+    ]
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = var.proxmox_password
+      host     = var.hades_address
+    }
+    inline = [
+      "grep -qxF 'lxc.cgroup2.devices.allow: c 195:* rwm' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 195:* rwm' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.cgroup2.devices.allow: c 509:* rwm' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 509:* rwm' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.cgroup2.devices.allow: c 226:* rwm' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 226:* rwm' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "grep -qxF 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' /etc/pve/lxc/${var.tvheadend_lxcid}.conf || echo 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' >> /etc/pve/lxc/${var.tvheadend_lxcid}.conf",
+      "rm -f ~/.nvidia-driver-version",
+      "echo '${var.nvidia_driver_version}' >> ~/.nvidia-driver-version",
+      "pct push ${var.tvheadend_lxcid} ~/.nvidia-driver-version /root/.nvidia-driver-version"
     ]
   }
 }

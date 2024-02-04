@@ -1,6 +1,8 @@
 ---
 - name: Include my vars
   include_vars: /Users/matt/.ansible/.default_vars.yml
+  tags:
+    - m3u
 
 - name: Create Tvheadend group
   group:
@@ -16,12 +18,50 @@
     state: present
     create_home: false
 
+- name: Add cuda repository key
+  apt:
+    deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+
+- name: Update repo cache
+  changed_when: false
+  apt:
+    update_cache: true
+
 - name: Install packages
   apt:
     pkg:
-      - apt-transport-https
-      - gnupg
       - python3-pip
+      - python3-requests
+      - build-essential
+      - openssl
+      - ccache
+      - libpcre2-dev
+      - pkg-config
+      - libssl-dev
+      - bzip2
+      - wget
+      - libavahi-client-dev
+      - zlib1g-dev
+      - libavcodec-dev
+      - libavutil-dev
+      - libavformat-dev
+      - libswscale-dev
+      - libsystemd-dev
+      - gettext
+      - cmake
+      - libiconv-hook-dev
+      - liburiparser-dev
+      - debhelper
+      - libcurl4-gnutls-dev
+      - libdvbcsa-dev
+      - libva-drm2
+      - libva-x11-2
+      - libx264-dev
+      - libx265-dev
+      - libnuma-dev
+      - libfdk-aac-dev
+      - libass-dev
+      - yasm
     state: latest
 
 - name: Install pip python packages
@@ -38,8 +78,11 @@
     state: directory
     mode: 0755
   loop:
+    - /opt/helpers
     - /opt/m3u-epg-editor
     - /var/lib/iptv
+    - /var/lib/tvheadend
+    - /home/hts
 
 - name: Download m3u epg editor
   git:
@@ -54,47 +97,108 @@
     src: config.json.j2
     dest: /opt/m3u-epg-editor/config.json
     mode: 0644
+  tags:
+    - m3u
 
-- name: Copy shell script to generate m3u files
+- name: Copy shell scripts
   copy:
-    src: generate-m3u.sh
-    dest: /root/generate-m3u.sh
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     mode: +x
+  loop:
+    - { src: build-tvheadend.sh, dest: /opt/build-tvheadend.sh }
+    - { src: generate-m3u.sh, dest: /opt/helpers/generate-m3u.sh }
+    - { src: build-ffmpeg.sh, dest: /opt/helpers/build-ffmpeg.sh }
+    - { src: fix-tvheadend.py, dest: /opt/helpers/fix-tvheadend.py }
+    - { src: ffmpegin.sh, dest: /usr/local/bin/ffmpegin.sh }
+    - { src: ffmpegout.sh, dest: /usr/local/bin/ffmpegout.sh }
+    - { src: linker.sh, dest: /usr/local/bin/linker.sh }
 
 - name: Build m3u files
-  shell:
-    cmd: /root/generate-m3u.sh > /dev/null 2>&1
+  shell: /opt/helpers/generate-m3u.sh > /dev/null 2>&1
 
-- name: Install the gpg keys for Tvheadend
-  apt_key:
-    url: "https://dl.cloudsmith.io/public/tvheadend/tvheadend/gpg.C6CC06BD69B430C6.key"
-    state: present
-    keyring: /usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg
-
-- name: Add the Tvheadend LTS repository
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-  loop:
-    - "deb [signed-by=/usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg] https://dl.cloudsmith.io/public/tvheadend/tvheadend/deb/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
-    - "deb-src [signed-by=/usr/share/keyrings/tvheadend-tvheadend-archive-keyring.gpg] https://dl.cloudsmith.io/public/tvheadend/tvheadend/deb/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
-
-- name: Update repo cache
-  changed_when: false
+- name: Install cuda toolkit (takes ages)
   apt:
-    update_cache: true
+    pkg: cuda-toolkit-11-8
+    state: latest
+
+- name: Update $PATH
+  lineinfile:
+    path: "{{ item.path }}"
+    insertbefore: BOF
+    line: "{{ item.line }}"
+  loop:
+    - { path: /root/.bashrc, line: "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}" }
+    - { path: /root/.bashrc, line: "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" }
+    - { path: /root/.zshrc, line: "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}" }
+    - { path: /root/.zshrc, line: "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" }
+
+- name: Reboot
+  reboot:
+
+- name: Get previously generated build process files
+  find:
+    paths: /opt
+    patterns:
+      - "*.deb"
+      - "*.buildinfo"
+      - "*.changes"
+  register: build_files
+
+- name: Remove previously generated build process files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ build_files.files }}"
+
+- name: Download ffmpeg
+  git:
+    repo: https://git.ffmpeg.org/ffmpeg.git
+    dest: /opt/ffmpeg
+    depth: 1
+    force: true
+
+- name: Download nv-codec-headers
+  git:
+    repo: https://github.com/FFmpeg/nv-codec-headers.git
+    dest: /opt/nv-codec-headers
+    force: true
+    version: origin/sdk/11.1
+
+- name: Install nv-codec-headers
+  shell:
+    chdir: /opt/nv-codec-headers
+    cmd: make install
+
+- name: Compile ffmpeg (takes ages)
+  shell: /opt/helpers/build-ffmpeg.sh
+  environment: 
+    PATH: /usr/local/cuda/bin:{{ ansible_env.PATH }}
+
+- name: Compile Tvheadend (takes ages)
+  shell: /opt/build-tvheadend.sh
+
+- name: Find generated .deb file
+  find:
+    paths: /opt
+    file_type: file
+    patterns: ^tvheadend_\d*\.?\d*-.*?\.deb$
+    use_regex: true
+  register: found_files
+
+- name: Get most recent .deb file name from list of found files
+  set_fact:
+    latest_file: "{{ found_files.files | sort(attribute='mtime',reverse=true) | first }}"
+
+- name: Install Tvheadend .deb
+  apt:
+    deb: /opt/{{ latest_file.path | basename }}
 
 - name: Synchronize Tvheadend config from backup source
   synchronize:
     src: "/Tvheadend-data/"
     dest: "/var/lib/tvheadend"
   delegate_to: "{{ inventory_hostname }}"
-
-- name: Install Tvheadend package
-  apt:
-    pkg:
-      - tvheadend
-    state: latest
 
 - name: Install tv_grab_file Grabber Module
   get_url:
@@ -104,6 +208,14 @@
     group: root
     mode: a+rx
   notify: Restart Tvheadend
+
+- name: Recursively change ownership of HTS home directory
+  file:
+    path: /home/hts/
+    state: directory
+    recurse: true
+    owner: hts
+    group: hts
 
 - name: Recursively change ownership of Tvheadend directories
   file:
@@ -170,4 +282,4 @@
     name: "generate m3u"
     minute: "1"
     hour: "*/12"
-    job: "/root/generate-m3u.sh > /dev/null 2>&1"
+    job: "/opt/helpers/generate-m3u.sh > /dev/null 2>&1"

@@ -2,4 +2,5 @@
 - hosts: tvheadend
   roles:
     - { role: common, tags: all }
+    - { role: nvidia, tags: all }
     - { role: tvheadend, tags: tvheadend }
