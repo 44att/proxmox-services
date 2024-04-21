@@ -11,6 +11,7 @@ resource "proxmox_lxc" "pi-hole-primary" {
   vmid            = var.pi-hole-primary_lxcid
   memory          = 1024
   cores           = 2
+  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {

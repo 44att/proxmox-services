@@ -67,3 +67,5 @@
     argv:
       - ~/install-pihole.sh
       - --unattended
+  notify:
+    - Restart Pi-hole
