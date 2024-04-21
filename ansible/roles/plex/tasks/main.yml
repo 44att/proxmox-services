@@ -7,6 +7,12 @@
       - curl
     state: latest
 
+- name: Create Plex directory if it does not exist
+  file:
+    path: /var/lib/plexmediaserver
+    state: directory
+    mode: 0755
+
 - name: Add Plex repository key
   apt_key:
     url: https://downloads.plex.tv/plex-keys/PlexSign.key
@@ -23,6 +29,8 @@
   synchronize:
     src: "/Plex-data/"
     dest: "/var/lib/plexmediaserver"
+    rsync_opts:
+      - "--exclude=Cache/"
   delegate_to: "{{ inventory_hostname }}"
 
 - name: Install Plex Server
@@ -32,6 +40,16 @@
     update_cache: "{{ status_plex_repo.changed }}"
   notify:
     - Start Plex
+
+- name: Recursively change ownership of Plex directory
+  file:
+    path: /var/lib/plexmediaserver/
+    state: directory
+    recurse: true
+    owner: plex
+    group: plex
+  notify:
+    - Restart Plex
 
 - name: Remove old cron job if it exists
   cron:
@@ -44,4 +62,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/plexmediaserver/ /Plex-data"
+    job: "rsync -qauz --no-perms --no-owner --no-group --exclude=Cache/ /var/lib/plexmediaserver/ /Plex-data"
