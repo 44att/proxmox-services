@@ -22,8 +22,8 @@ resource "proxmox_lxc" "homepage" {
     size    = "1G"
     slot    = 0
     key     = "0"
-    storage = "/mnt/pve/app_data/homepage/config"
-    volume  = "/mnt/pve/app_data/homepage/config"
+    storage = "/mnt/pve/app_data/homepage"
+    volume  = "/mnt/pve/app_data/homepage"
   }
 
   network {
