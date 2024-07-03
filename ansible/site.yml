@@ -13,17 +13,17 @@
 # - import_playbook: ./playbooks/samba.yml
 - import_playbook: ./playbooks/sonarr.yml
 # - import_playbook: ./playbooks/syncthing.yml
-- import_playbook: ./playbooks/tdarr.yml
+# - import_playbook: ./playbooks/tdarr.yml
 - import_playbook: ./playbooks/traefik.yml
 - import_playbook: ./playbooks/homepage.yml
-- import_playbook: ./playbooks/navidrome.yml
+# - import_playbook: ./playbooks/navidrome.yml
 - import_playbook: ./playbooks/crowdsec.yml
 - import_playbook: ./playbooks/recyclarr.yml
 # - import_playbook: ./playbooks/threadfin.yml
 - import_playbook: ./playbooks/plex.yml
 - import_playbook: ./playbooks/upgradinatorr.yml
 - import_playbook: ./playbooks/jellyplex-watched.yml
-- import_playbook: ./playbooks/firefly.yml
+# - import_playbook: ./playbooks/firefly.yml
 - import_playbook: ./playbooks/tautulli.yml
 - import_playbook: ./playbooks/uptime-kuma.yml
 - import_playbook: ./playbooks/tvheadend.yml
