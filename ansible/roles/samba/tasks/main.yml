@@ -1,12 +1,27 @@
 ---
+- name: Reboot to ensure terraform provisioner config is applied
+  reboot:
+  
 - name: Install required packages
   apt:
     pkg:
       - samba
     state: latest
 
+- name: Create directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /storage/media/tv-shows
+    - /storage/media/movies
+    - /storage/media/pictures
+    - /storage/downloads/nzbs
+    - /storage/downloads/torrents
+    - /storage/shares/matt
+
 - name: Copy smb.conf file
-  ansible.builtin.copy:
+  copy:
     src: smb.conf
     dest: /etc/samba/smb.conf
     owner: root
@@ -15,58 +30,30 @@
   notify:
     - Restart Samba
 
-- name: Create brian user
+- name: Create matt user
   user:
-    name: brian
+    name: matt
     groups: sambashare
     shell: /sbin/nologin
     append: true
     state: present
     create_home: false
-  register: brian_created
+  register: matt_created
 
-- name: Create charlene user
-  user:
-    name: charlene
-    groups: sambashare
-    shell: /sbin/nologin
-    append: true
-    state: present
-    create_home: false
-  register: charlene_created
-
-- name: Prompt for user brian's samba password
-  when: brian_created.changed
+- name: Prompt for user matt's samba password
+  when: matt_created.changed
   pause:
-    prompt: "Please enter user brian's samba password"
+    prompt: "Please enter user matt's samba password"
     echo: false
   register: result
 
 - set_fact:
-    brian_password: "{{ result.user_input }}"
-  when: brian_created.changed
+    matt_password: "{{ result.user_input }}"
+  when: matt_created.changed
 
-- name: Prompt for user charlene's samba password
-  when: charlene_created.changed
-  pause:
-    prompt: "Please enter user charlene's samba password"
-    echo: false
-  register: result_c
-
-- set_fact:
-    charlene_password: "{{ result_c.user_input }}"
-  when: charlene_created.changed
-
-- name: Configure brian user
-  when: brian_created.changed
+- name: Configure matt user
+  when: matt_created.changed
   shell: >
-    (pdbedit --user=brian 2>&1 > /dev/null)
-    || (echo '{{ brian_password }}'; echo '{{ brian_password }}')
-    | smbpasswd -s -a brian
-
-- name: Configure charlene user
-  when: charlene_created.changed
-  shell: >
-    (pdbedit --user=charlene 2>&1 > /dev/null)
-    || (echo '{{ charlene_password }}'; echo '{{ charlene_password }}')
-    | smbpasswd -s -a charlene
+    (pdbedit --user=matt 2>&1 > /dev/null)
+    || (echo '{{ matt_password }}'; echo '{{ matt_password }}')
+    | smbpasswd -s -a matt
