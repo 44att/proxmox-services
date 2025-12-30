@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "plex" {
-  target_node     = "hades"
+  target_node     = "pve2"
   hostname        = "plex"
-  ostemplate      = "/mnt/pve/iso/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -57,7 +57,7 @@ resource "proxmox_lxc" "plex" {
       type     = "ssh"
       user     = "root"
       password = var.proxmox_password
-      host     = var.hades_address
+      host     = var.pve2_address
     }
     inline = [
       "grep -qxF 'lxc.cgroup2.devices.allow: c 195:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 195:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",

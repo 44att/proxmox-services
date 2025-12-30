@@ -1,13 +1,13 @@
 resource "proxmox_lxc" "pi-hole-secondary" {
-  target_node     = "hades"
+  target_node     = "pve2"
   hostname        = "pi-hole-secondary"
-  ostemplate      = "/mnt/pve/iso/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
   start           = true
   onboot          = true
-  vmid            = var.pi-hole-secondary_lxcid
+  vmid            = var.pi-hole_lxcid
   memory          = 1024
   cores           = 2
   nameserver      = var.gateway_ip
