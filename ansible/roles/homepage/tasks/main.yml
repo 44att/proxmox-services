@@ -2,11 +2,13 @@
 - name: Create Homepage group
   group:
     name: homepage
+    gid: 10000
     state: present
 
 - name: Create Homepage user
   user:
     name: homepage
+    uid: 1000
     groups: homepage
     shell: /sbin/nologin
     append: true
@@ -16,44 +18,58 @@
 - name: Install packages
   apt:
     pkg:
-      - apt-transport-https
-      - gnupg
-      - inotify-tools
+      - curl
     state: latest
 
-- name: Create Homepage directory if it does not exist
+- name: Create Homepage directories if they don't exist
   file:
-    path: /opt/homepage
+    path: "{{ item }}"
     state: directory
     mode: 0755
+  loop:
+    - /opt/homepage
+    - /root/.nvm
+    - /root/.cache/node
 
 - name: Add Homepage directory as safe in git config
-  shell:
-    cmd: git config --global --add safe.directory /opt/homepage
+  shell: >
+    git config --global --add safe.directory /opt/homepage
 
-- name: Install the gpg keys for nodejs LTS
-  apt_key:
-    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
-    state: present
-    
-- name: Add the nodejs LTS repository
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release }} main"
-    state: present
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
 
-- name: Update repo cache
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
   changed_when: false
-  apt:
-    update_cache: true
 
-- name: Install nodejs package
-  apt:
-    name: nodejs
-    state: present
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install 22
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
 
 - name: Install pnpm
-  shell:
-    cmd: corepack enable; corepack prepare pnpm@latest --activate
+  shell: >
+    source /root/nvm.env &&
+    corepack enable pnpm
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
 
 - name: Download Homepage
   git:
@@ -61,7 +77,6 @@
     dest: /opt/homepage
     depth: 1
     force: true
-    version: main
 
 - name: Create config directory
   file:
@@ -69,10 +84,37 @@
     state: directory
     mode: 0755
 
-- name: Install Homepage
-  shell:
+- name: Install Homepage 
+  shell: >
+    source /root/nvm.env &&
+    pnpm install --frozen-lockfile --silent
+  args:
+    executable: /bin/bash
     chdir: /opt/homepage
-    cmd: pnpm install; pnpm build
+  environment:
+    COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+  changed_when: false
+
+- name: Build Homepage 
+  shell: >
+    source /root/nvm.env &&
+    pnpm build
+  args:
+    executable: /bin/bash
+    chdir: /opt/homepage
+  environment:
+    GENERATE_SOURCEMAP: 'false'
+  changed_when: false
+
+- name: Clear build cache
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest &&
+    pnpm store prune
+  args:
+    executable: /bin/bash
+    chdir: /opt/homepage
+  changed_when: false
 
 - name: Copy config files from persistant storage
   copy:
@@ -96,20 +138,20 @@
     dest: /root/sync-config.sh
     mode: +x
 
-- name: Copy config sync systemd service file
-  copy:
-    src: sync-config.service
-    dest: /etc/systemd/system
-    owner: root
-    group: root
-  notify:
-    - Start Config Sync
+# - name: Copy config sync systemd service file
+#   copy:
+#     src: sync-config.service
+#     dest: /etc/systemd/system
+#     owner: root
+#     group: root
+#   notify:
+#     - Start Config Sync
 
-- name: Copy Homepage systemd service file
-  copy:
-    src: homepage.service
-    dest: /etc/systemd/system
-    owner: root
-    group: root
-  notify:
-    - Start Homepage
+# - name: Copy Homepage systemd service file
+#   copy:
+#     src: homepage.service
+#     dest: /etc/systemd/system
+#     owner: root
+#     group: root
+#   notify:
+#     - Start Homepage

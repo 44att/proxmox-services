@@ -1,0 +1,14 @@
+- name: Restart Cockpit
+  systemd:
+    name: cockpit
+    state: restarted
+    daemon_reload: true
+
+- name: Restart Samba
+  systemd:
+    name: smbd
+    state: restarted
+    daemon_reload: true
+
+- name: Shutdown LXC
+  community.general.shutdown:

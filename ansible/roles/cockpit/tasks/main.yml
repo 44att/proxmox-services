@@ -1,0 +1,81 @@
+---
+- name: Create NAS shares group
+  group:
+    name: nas_shares
+    gid: 10000
+    state: present
+
+- name: Create Cockpit group
+  group:
+    name: cockpit
+    state: present
+
+- name: Create Cockpit user
+  user:
+    name: cockpit
+    password: "{{ tf_cockpit_password | password_hash('sha512') }}"
+    uid: 1000
+    groups:
+      - cockpit
+      - nas_shares
+    append: true
+    state: present
+
+- name: Install required packages
+  apt:
+    pkg:
+      - curl
+      - gnupg
+      - libssl-dev
+      - sscg
+    state: latest
+
+- name: Install cockpit
+  apt:
+    pkg: cockpit
+    install_recommends: false
+    state: latest
+
+- name: Download 45drives repo setup script
+  get_url: 
+    url: https://repo.45drives.com/setup
+    dest: ~/45drives-setup.sh
+    mode: 0740
+
+- name: Execute 45drives repo setup script
+  shell: ~/45drives-setup.sh
+
+- name: Remove 45drives repo setup script
+  file:
+    path: ~/45drives-setup.sh
+    state: absent
+
+- name: Upgrade dependencies
+  apt:
+    update_cache: true
+    upgrade: full
+
+- name: Install cockpit packages
+  apt:
+    pkg:
+      - cockpit-file-sharing
+      - cockpit-navigator
+      - cockpit-identities
+    state: latest
+
+- name: Create disallowed users file
+  file:
+    path: /etc/cockpit/disallowed-users
+    state: touch
+  notify:
+    - Shutdown LXC
+
+- name: Copy smb.conf file
+  copy:
+    src: smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart Samba

@@ -1,5 +1,0 @@
----
-- hosts: jellyplex_watched
-  roles:
-    - { role: common, tags: all }
-    - { role: jellyplex_watched, tags: jellyplex_watched }

@@ -1,0 +1,16 @@
+[Unit]
+Description=Seerr Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+EnvironmentFile=/etc/seerr/seerr.conf
+Environment=NODE_ENV=production
+Environment=CONFIG_DIRECTORY=/etc/seerr
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/seerr
+ExecStart=/root/.nvm/versions/node/v22.22.0/bin/node dist/index.js
+
+[Install]
+WantedBy=multi-user.target

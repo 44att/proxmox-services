@@ -1,5 +1,0 @@
-- name: Restart Tvheadend
-  systemd:
-    name: tvheadend
-    state: restarted
-    daemon_reload: true

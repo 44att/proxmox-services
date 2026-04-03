@@ -2,11 +2,13 @@
 - name: Create Radarr group
   group:
     name: radarr
+    gid: 10000
     state: present
 
 - name: Create Radarr user
   user:
     name: radarr
+    uid: 1000
     groups: radarr
     shell: /sbin/nologin
     append: true
@@ -29,7 +31,7 @@
 
 - name: Install Radarr
   unarchive:
-    src: https://github.com/Radarr/Radarr/releases/download/v5.2.6.8376/Radarr.master.5.2.6.8376.linux-core-x64.tar.gz
+    src: https://github.com/Radarr/Radarr/releases/download/v6.1.1.10360/Radarr.master.6.1.1.10360.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
 
@@ -70,4 +72,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/radarr/ /Radarr-data"
+    job: "rsync -qauzog /var/lib/radarr/ /Radarr-data"

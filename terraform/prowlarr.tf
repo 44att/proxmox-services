@@ -9,21 +9,11 @@ resource "proxmox_lxc" "prowlarr" {
   onboot          = true
   vmid            = var.prowlarr_lxcid
   memory          = 1024
-  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
     size    = "4G"
-  }
-
-  mountpoint {
-    mp      = "/Prowlarr-data"
-    size    = "1G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/prowlarr/config"
-    volume  = "/mnt/pve/app_data/prowlarr/config"
   }
 
   network {
@@ -35,9 +25,17 @@ resource "proxmox_lxc" "prowlarr" {
     hwaddr = var.prowlarr_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
+      host     = var.pve2_address
+    }
+    inline = [
+      "pct set ${var.prowlarr_lxcid} -mp0 /mnt/pve/media_root,mp=/mnt/media_root",
+      "pct set ${var.prowlarr_lxcid} -mp1 /mnt/pve/app_config/prowlarr,mp=/Prowlarr-data",
+      "pct reboot ${var.prowlarr_lxcid}",
     ]
   }
 }

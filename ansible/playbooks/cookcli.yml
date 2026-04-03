@@ -1,0 +1,7 @@
+---
+- hosts: cookcli
+  vars_files:
+    - ../../terraform/tf_ansible_vars.yml
+  roles:
+    - { role: common }
+    - { role: cookcli, tags: cookcli }

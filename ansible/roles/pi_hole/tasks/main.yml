@@ -55,7 +55,7 @@
 - name: Copy Pi-hole local DNS config
   template:
     src: custom.list.j2
-    dest: /etc/pihole/custom.list
+    dest: /etc/pihole/hosts/ansible.list
   notify:
     - Restart Pi-hole
   tags:

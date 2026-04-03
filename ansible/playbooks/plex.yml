@@ -1,6 +1,8 @@
 ---
 - hosts: plex
+  vars_files:
+    - ../../terraform/tf_ansible_vars.yml
   roles:
-    - { role: common, tags: all }
-    - { role: nvidia, tags: all }
+    - { role: common }
+    - { role: nvidia }
     - { role: plex, tags: plex }

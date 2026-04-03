@@ -3,13 +3,18 @@ Description=Radarr Daemon
 After=syslog.target network.target
 
 [Service]
+WorkingDirectory=/opt/Radarr/
 User=radarr
 Group=radarr
+Restart=on-failure
+RestartSec=5
 Type=simple
 ExecStart=/opt/Radarr/Radarr -nobrowser -data=/var/lib/radarr/
+KillSignal=SIGINT
 TimeoutStopSec=20
+SyslogIdentifier=radarr
+ExecStartPre=/bin/sleep 30
 KillMode=process
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

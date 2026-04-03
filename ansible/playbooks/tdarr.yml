@@ -1,6 +1,0 @@
----
-- hosts: tdarr
-  roles:
-    - { role: common, tags: all }
-    - { role: nvidia, tags: all }
-    - { role: tdarr, tags: tdarr }

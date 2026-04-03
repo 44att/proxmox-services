@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-cookcli-http:
+      rule: "Host(`recipes.{{ external_domain }}`)"
+      service: cookcli
+      middlewares:
+        - https-redirect
+
+    to-cookcli:
+      rule: "Host(`recipes.{{ external_domain }}`)"
+      service: cookcli
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    cookcli:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_cookcli_ip }}:9080

@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-cockpit-http:
+      rule: "Host(`cockpit.{{ external_domain }}`)"
+      service: cockpit
+      middlewares:
+        - https-redirect
+
+    to-cockpit:
+      rule: "Host(`cockpit.{{ external_domain }}`)"
+      service: cockpit
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    cockpit:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_cockpit_ip }}:9090

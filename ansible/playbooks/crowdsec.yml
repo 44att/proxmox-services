@@ -1,5 +1,0 @@
----
-- hosts: crowdsec
-  roles:
-    - { role: common, tags: all }
-    - { role: crowdsec, tags: crowdsec }

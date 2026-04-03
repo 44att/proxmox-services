@@ -30,9 +30,10 @@ certificatesResolvers:
   letsencrypt:
     acme:
       email: "{{ acme_email }}"
-      storage: /traefik-config/acme.json
+      storage: /etc/traefik/certs/acme.json
       dnsChallenge:
         provider: cloudflare
         resolvers:
-          - "9.9.9.9"
-          - "149.112.112.112"
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+        delayBeforeCheck: 10

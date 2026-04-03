@@ -8,7 +8,6 @@ resource "proxmox_lxc" "recyclarr" {
   start           = true
   onboot          = true
   vmid            = var.recyclarr_lxcid
-  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {

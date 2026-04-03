@@ -1,12 +1,17 @@
 ---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
 - name: Create Prowlarr group
   group:
     name: prowlarr
+    gid: 10000
     state: present
 
 - name: Create Prowlarr user
   user:
     name: prowlarr
+    uid: 1000
     groups: prowlarr
     shell: /sbin/nologin
     append: true
@@ -22,19 +27,28 @@
 
 - name: Install Prowlarr
   unarchive:
-    src: https://github.com/Prowlarr/Prowlarr/releases/download/v1.12.2.4211/Prowlarr.master.1.12.2.4211.linux-core-x64.tar.gz
+    src: https://github.com/Prowlarr/Prowlarr/releases/download/v2.3.0.5236/Prowlarr.master.2.3.0.5236.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
   notify:
     - Restart Prowlarr
+    
+- name: Synchronize Prowlarr config from backup source
+  synchronize:
+    src: "/Prowlarr-data/"
+    dest: "/var/lib/prowlarr"
+  delegate_to: "{{ inventory_hostname }}"
 
 - name: Recursively change ownership of Prowlarr directory
   file:
-    path: /opt/Prowlarr
+    path: "{{ item }}"
     state: directory
     recurse: true
     owner: prowlarr
     group: prowlarr
+  loop:
+    - /opt/Prowlarr
+    - /var/lib/prowlarr
 
 - name: Copy systemd service file to server
   copy:
@@ -44,3 +58,16 @@
     group: root
   notify:
     - Start Prowlarr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup prowlarr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup prowlarr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog /var/lib/prowlarr/ /Prowlarr-data"

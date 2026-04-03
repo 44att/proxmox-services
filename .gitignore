@@ -1,3 +1,4 @@
 .DS_Store
 *.tfstate
 *.tfstate.*
+tf_ansible_vars.yml

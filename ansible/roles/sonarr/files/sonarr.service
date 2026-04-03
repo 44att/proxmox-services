@@ -3,13 +3,18 @@ Description=Sonarr Daemon
 After=syslog.target network.target
 
 [Service]
+WorkingDirectory=/opt/Sonarr/
 User=sonarr
 Group=sonarr
+Restart=on-failure
+RestartSec=5
 Type=simple
 ExecStart=/opt/Sonarr/Sonarr -nobrowser -data=/var/lib/sonarr/
+KillSignal=SIGINT
 TimeoutStopSec=20
+SyslogIdentifier=sonarr
+ExecStartPre=/bin/sleep 30
 KillMode=process
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

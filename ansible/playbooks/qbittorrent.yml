@@ -1,5 +1,0 @@
----
-- hosts: qbittorrent
-  roles:
-    - { role: common, tags: all }
-    - { role: qbittorrent, tags: qbittorrent }

@@ -1,63 +1,44 @@
-192.168.2.1 modem.home.lan
-192.168.1.1 usg.home.lan
-192.168.1.4 unifi.home.lan
-192.168.1.8 microserver-apollo.home.lan
-192.168.1.9 microserver-hades.home.lan
-192.168.1.10 apollo.home.lan
-192.168.1.12 truenas.home.lan
-192.168.1.14 hades.home.lan
-192.168.1.16 dashboard.home.lan
-192.168.1.20 pi-hole.home.lan
-192.168.1.21 pi-hole-2.home.lan
-192.168.1.22 crowdsec.home.lan
-192.168.1.28 network.home.lan
-192.168.1.29 traefik.home.lan
-192.168.1.30 jellyfin.home.lan
-192.168.1.31 jellyseerr.home.lan
-192.168.1.32 prowlarr.home.lan
-192.168.1.33 bazarr.home.lan
-192.168.1.34 sonarr.home.lan
-192.168.1.35 radarr.home.lan
-192.168.1.36 lidarr.home.lan
-192.168.1.37 tdarr.home.lan
-192.168.1.38 navidrome.home.lan
-192.168.1.39 recyclarr.home.lan
-192.168.1.40 plex.home.lan
-192.168.1.41 upgradinatorr.home.lan
-192.168.1.42 jellyplex-watched.home.lan
-192.168.1.43 firefly.home.lan
-192.168.1.44 tautulli.home.lan
-192.168.1.45 uptime-kuma.home.lan
-192.168.10.30 sabnzbd.home.lan
-192.168.10.31 qbittorrent.home.lan
-192.168.10.32 antennas.home.lan
-192.168.10.33 tvheadend.home.lan
-192.168.1.29 modem.{{ external_domain }}
-192.168.1.29 usg.{{ external_domain }}
-192.168.1.29 unifi.{{ external_domain }}
-192.168.1.29 microserver-apollo.{{ external_domain }}
-192.168.1.29 microserver-hades.{{ external_domain }}
-192.168.1.29 apollo.{{ external_domain }}
-192.168.1.29 truenas.{{ external_domain }}
-192.168.1.29 hades.{{ external_domain }}
-192.168.1.29 dashboard.{{ external_domain }}
-192.168.1.29 pi-hole.{{ external_domain }}
-192.168.1.29 pi-hole-2.{{ external_domain }}
-192.168.1.29 traefik.{{ external_domain }}
-192.168.1.29 media.{{ external_domain }}
-192.168.1.29 requests.{{ external_domain }}
-192.168.1.29 search.{{ external_domain }}
-192.168.1.29 subtitles.{{ external_domain }}
-192.168.1.29 tv.{{ external_domain }}
-192.168.1.29 movies.{{ external_domain }}
-192.168.1.29 music.{{ external_domain }}
-192.168.1.29 transcode.{{ external_domain }}
-192.168.1.29 music-server.{{ external_domain }}
-192.168.1.29 watch.{{ external_domain }}
-192.168.1.29 finance.{{ external_domain }}
-192.168.1.29 plex-stats.{{ external_domain }}
-192.168.1.29 monitoring.{{ external_domain }}
-192.168.1.29 nzbs.{{ external_domain }}
-192.168.1.29 torrents.{{ external_domain }}
-192.168.1.29 tuner.{{ external_domain }}
-192.168.1.29 streaming.{{ external_domain }}
+10.1.1.1 usg.home.lan
+10.1.1.20 unifi.home.lan
+10.1.7.4 microserver-pve1.home.lan
+10.1.7.5 microserver-pve2.home.lan
+10.1.7.2 pve1.home.lan
+10.1.7.3 pve2.home.lan
+{{ tf_mafl_ip }} dashboard.home.lan
+{{ tf_cockpit_ip }} cockpit.home.lan
+{{ tf_pi_hole_primary_ip }} pi-hole.home.lan
+{{ tf_pi_hole_secondary_ip }} pi-hole-2.home.lan
+{{ tf_traefik_ip }} traefik.home.lan
+{{ tf_jellyseerr_ip }} jellyseerr.home.lan
+{{ tf_seerr_ip }} seerr.home.lan
+{{ tf_prowlarr_ip }} prowlarr.home.lan
+{{ tf_bazarr_ip }} bazarr.home.lan
+{{ tf_sonarr_ip }} sonarr.home.lan
+{{ tf_radarr_ip }} radarr.home.lan
+{{ tf_recyclarr_ip }} recyclarr.home.lan
+{{ tf_plex_ip }} plex.home.lan
+{{ tf_sabnzbd_ip }} sabnzbd.home.lan
+{{ tf_syncthing_ip }} syncthing.home.lan
+{{ tf_cookcli_ip }} cookcli.home.lan
+{{ tf_traefik_ip }} dashboard.{{ external_domain }}
+{{ tf_traefik_ip }} usg.{{ external_domain }}
+{{ tf_traefik_ip }} unifi.{{ external_domain }}
+{{ tf_traefik_ip }} microserver-pve1.{{ external_domain }}
+{{ tf_traefik_ip }} microserver-pve2.{{ external_domain }}
+{{ tf_traefik_ip }} pve1.{{ external_domain }}
+{{ tf_traefik_ip }} pve2.{{ external_domain }}
+{{ tf_traefik_ip }} cockpit.{{ external_domain }}
+{{ tf_traefik_ip }} pi-hole.{{ external_domain }}
+{{ tf_traefik_ip }} pi-hole-2.{{ external_domain }}
+{{ tf_traefik_ip }} traefik.{{ external_domain }}
+{{ tf_traefik_ip }} media.{{ external_domain }}
+{{ tf_traefik_ip }} requests.{{ external_domain }}
+{{ tf_traefik_ip }} search.{{ external_domain }}
+{{ tf_traefik_ip }} subtitles.{{ external_domain }}
+{{ tf_traefik_ip }} tv.{{ external_domain }}
+{{ tf_traefik_ip }} movies.{{ external_domain }}
+{{ tf_traefik_ip }} watch.{{ external_domain }}
+{{ tf_traefik_ip }} nzbs.{{ external_domain }}
+{{ tf_traefik_ip }} streaming.{{ external_domain }}
+{{ tf_traefik_ip }} syncthing.{{ external_domain }}
+{{ tf_traefik_ip }} recipes.{{ external_domain }}

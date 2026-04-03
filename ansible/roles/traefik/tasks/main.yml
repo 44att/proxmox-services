@@ -4,7 +4,7 @@
 
 - name: Install Traefik
   unarchive:
-    src: https://github.com/traefik/traefik/releases/download/v2.10.7/traefik_v2.10.7_linux_amd64.tar.gz
+    src: https://github.com/traefik/traefik/releases/download/v3.6.12/traefik_v3.6.12_linux_amd64.tar.gz
     dest: /usr/local/bin
     remote_src: true
   notify:
@@ -13,12 +13,14 @@
 - name: Create Traefik group
   group:
     name: traefik
+    gid: 10000
     state: present
 
 - name: Create Traefik user
   user:
     name: traefik
-    group: traefik
+    uid: 1000
+    groups: traefik
     shell: /sbin/nologin
     state: present
     create_home: false
@@ -46,6 +48,8 @@
   template:
     src: "{{ item }}"
     dest: /etc/traefik/config/{{ item | basename | regex_replace('\.j2$', '') }}
+    owner: traefik
+    group: traefik
   with_fileglob:
     - ../templates/services/*.j2
   notify:
@@ -68,7 +72,23 @@
     mode: 0755
   loop:
     - "/etc/traefik/plugins-storage"
+    - "/etc/traefik/certs"
+    - "/etc/traefik/config"
     - "/var/log/traefik"
+
+- name: Synchronize Bazarr config from backup source
+  synchronize:
+    src: "/traefik-config/certs/"
+    dest: "/etc/traefik/certs"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Change ownership of acme.json file
+  file:
+    path: /etc/traefik/certs/acme.json
+    state: file
+    owner: traefik
+    group: traefik
+    mode: 0600
 
 - name: Copy systemd service file to server
   template:
@@ -94,6 +114,7 @@
     state: absent
   loop:
     - "copy traefik logs"
+    - "copy acme.json"
     - "logrotate"
 
 - name: Create logs cron job
@@ -102,7 +123,13 @@
     weekday: "*"
     minute: "*/5"
     hour: "*"
-    job: "rsync -qauz --delete --no-perms --no-owner --no-group /var/log/traefik/ /traefik-config/logs"
+    job: "rsync -qauzog --delete /var/log/traefik/ /traefik-config/logs"
+
+- name: Create acme.json cron job
+  cron:
+    name: "copy acme.json"
+    special_time: daily
+    job: "rsync -qauzog /etc/traefik/certs/ /traefik-config/certs"
 
 - name: Create logrotate cron job
   cron:

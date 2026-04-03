@@ -1,0 +1,157 @@
+---
+- name: Create Seerr group
+  group:
+    name: seerr
+    gid: 10000
+    state: present
+
+- name: Create Seerr user
+  user:
+    name: seerr
+    uid: 1000
+    groups: seerr
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Create Seerr directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/seerr
+    - /etc/seerr
+    - /root/.nvm
+    - /root/.cache/node
+
+- name: Add Seerr directory as safe in git config
+  shell: >
+    git config --global --add safe.directory /opt/seerr
+
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
+
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
+  changed_when: false
+
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install 22
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Install pnpm
+  shell: >
+    source /root/nvm.env &&
+    corepack enable pnpm
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Download Seerr
+  git:
+    repo: https://github.com/seerr-team/seerr.git
+    dest: /opt/seerr
+    depth: 1
+    force: true
+    version: main
+  notify:
+    - Start Seerr
+
+- name: Install Seerr
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-10 &&
+    pnpm install --frozen-lockfile
+  args:
+    executable: /bin/bash
+    chdir: /opt/seerr
+  environment:
+    CYPRESS_INSTALL_BINARY: '0'
+    HUSKY: '0' 
+  changed_when: false
+
+- name: Build Seerr 
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-10 &&
+    pnpm build
+  args:
+    executable: /bin/bash
+    chdir: /opt/seerr
+  environment:
+    GENERATE_SOURCEMAP: 'false'
+  changed_when: false
+
+- name: Clear build cache
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-10 &&
+    pnpm store prune
+  args:
+    executable: /bin/bash
+    chdir: /opt/seerr
+  changed_when: false
+
+- name: Recursively change ownership of Seerr directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: seerr
+    group: seerr
+  loop:
+    - /opt/seerr/
+    - /etc/seerr/
+
+- name: Synchronize Seerr config from backup source
+  synchronize:
+    src: "/Seerr-data/"
+    dest: "/etc/seerr/"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Copy Seerr systemd service file
+  copy:
+    src: seerr.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Seerr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup seerr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup seerr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog /etc/seerr/ /Seerr-data"

@@ -2,12 +2,13 @@
 - name: Create Syncthing group
   group:
     name: syncthing
+    gid: 10000
     state: present
-    gid: 118
 
 - name: Create Syncthing user
   user:
     name: syncthing
+    uid: 1000
     groups: syncthing
     shell: /sbin/nologin
     append: true
@@ -20,10 +21,31 @@
       - gnupg
     state: latest
 
+# - name: Create Syncthing directory if it does not exist
+#   file:
+#     path: /var/lib/syncthing
+#     state: directory
+#     mode: 0755
+
+# - name: Synchronize Syncthing config from backup source
+#   synchronize:
+#     src: "/Syncthing-data/"
+#     dest: "/var/lib/syncthing/"
+#   delegate_to: "{{ inventory_hostname }}"
+
+# - name: Recursively change ownership of Syncthing directory
+#   file:
+#     path: /var/lib/syncthing
+#     state: directory
+#     recurse: true
+#     owner: syncthing
+#     group: syncthing
+
 - name: Add the Syncthing APT release key
-  ansible.builtin.apt_key:
+  apt_key:
     url: https://syncthing.net/release-key.gpg
     keyring: /etc/apt/trusted.gpg.d/syncthing-archive-keyring.gpg
+    state: present
 
 - name: Add the Syncthing repository
   apt_repository:
@@ -31,12 +53,19 @@
     filename: syncthing
     state: present
 
+- name: Create systemd service directory
+  file:
+    path: /etc/systemd/system/syncthing@syncthing.service.d
+    state: directory
+    mode: 0755
+    
 - name: Copy systemd service file to server
-  copy:
-    src: syncthing@syncthing.service.d
-    dest: /etc/systemd/system
+  template:
+    src: syncthing@syncthing.service.d/override.conf.j2
+    dest: /etc/systemd/system/syncthing@syncthing.service.d/override.conf
     owner: root
     group: root
+    mode: 0744
   notify:
     - Restart Syncthing
 
@@ -47,3 +76,16 @@
     state: latest
   notify:
     - Restart Syncthing
+
+# - name: Remove old cron job if it exists
+#   cron:
+#     name: "backup syncthing"
+#     state: absent
+
+# - name: Create backup cron job
+#   cron:
+#     name: "backup syncthing"
+#     weekday: "*"
+#     minute: "*/30"
+#     hour: "*"
+#     job: "rsync -qauzog /var/lib/syncthing/ /Syncthing-data"

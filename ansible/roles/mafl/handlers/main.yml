@@ -1,0 +1,5 @@
+- name: Start Mafl
+  systemd:
+    name: mafl
+    state: restarted
+    daemon_reload: true

@@ -8,31 +8,12 @@ resource "proxmox_lxc" "jellyseerr" {
   start           = true
   onboot          = true
   vmid            = var.jellyseerr_lxcid
-  memory          = 2048
-  nameserver      = var.gateway_ip
+  memory          = 4096
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
     size    = "4G"
-  }
-
-  mountpoint {
-    mp      = "/etc/jellyseerr"
-    size    = "1G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/jellyseerr/config"
-    volume  = "/mnt/pve/app_data/jellyseerr/config"
-  }
-
-  mountpoint {
-    mp      = "/mnt/pve/media/media"
-    size    = "4000G"
-    slot    = 1
-    key     = "1"
-    storage = "/mnt/pve/media/media"
-    volume  = "/mnt/pve/media/media"
   }
 
   network {
@@ -44,10 +25,17 @@ resource "proxmox_lxc" "jellyseerr" {
     hwaddr = var.jellyseerr_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage,
-      mountpoint[1].storage
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
+      host     = var.pve2_address
+    }
+    inline = [
+      "pct set ${var.jellyseerr_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media",
+      "pct set ${var.jellyseerr_lxcid} -mp1 /mnt/pve/app_config/jellyseerr/config,mp=/Jellyseerr-data",
+      "pct reboot ${var.jellyseerr_lxcid}",
     ]
   }
 }

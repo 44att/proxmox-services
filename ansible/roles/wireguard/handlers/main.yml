@@ -1,0 +1,8 @@
+- name: Restart wireguard
+  systemd:
+    name: wg-quick@wg0.service
+    state: restarted
+    daemon_reload: true
+
+- name: Shutdown LXC
+  community.general.shutdown:

@@ -1,0 +1,5 @@
+- name: Start Seerr
+  systemd:
+    name: seerr
+    state: restarted
+    daemon_reload: true

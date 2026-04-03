@@ -1,0 +1,140 @@
+---
+- name: Create Mafl group
+  group:
+    name: mafl
+    gid: 10000
+    state: present
+
+- name: Create Mafl user
+  user:
+    name: mafl
+    uid: 1000
+    groups: mafl
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Create nvm/node directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /root/.nvm
+    - /root/.cache/node
+
+- name: Add Mafl directory as safe in git config
+  shell: >
+    git config --global --add safe.directory /opt/mafl
+
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
+
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
+  changed_when: false
+
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install 22
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Install yarn
+  shell: >
+    source /root/nvm.env &&
+    corepack enable yarn
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Download Mafl
+  git:
+    repo: https://github.com/hywax/mafl.git
+    dest: /opt/mafl
+    depth: 1
+    force: true
+    version: main
+
+- name: Create data and public directories
+  file:
+    path: /opt/mafl/public/favicons
+    state: directory
+    mode: 0755
+
+- name: Install Mafl 
+  shell: >
+    source /root/nvm.env &&
+    yarn --silent install
+  args:
+    executable: /bin/bash
+    chdir: /opt/mafl
+  environment:
+    COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+    CYPRESS_INSTALL_BINARY: '0'
+    HUSKY: '0'
+  changed_when: false
+
+- name: Build Mafl 
+  shell: >
+    source /root/nvm.env &&
+    yarn --silent build
+  args:
+    executable: /bin/bash
+    chdir: /opt/mafl
+  changed_when: false
+
+- name: Recursively change ownership of Mafl directory
+  file:
+    path: /opt/mafl/
+    state: directory
+    recurse: true
+    owner: mafl
+    group: mafl
+
+- name: Symlink data directory
+  file:
+    src: /Mafl-data
+    dest: /opt/mafl/data
+    state: link
+
+- name: Copy favicons
+  copy:
+    src: "{{ item }}"
+    dest: /opt/mafl/.output/public/favicons/{{ item | basename }}
+    owner: mafl
+    group: mafl
+  with_fileglob:
+    - ../files/favicons/*
+
+- name: Copy Mafl systemd service file
+  copy:
+    src: mafl.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Mafl
+    

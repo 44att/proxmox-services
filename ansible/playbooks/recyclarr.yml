@@ -1,5 +1,7 @@
 ---
 - hosts: recyclarr
+  vars_files:
+    - ../../terraform/tf_ansible_vars.yml
   roles:
-    - { role: common, tags: all }
+    - { role: common }
     - { role: recyclarr, tags: recyclarr }

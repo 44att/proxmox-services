@@ -1,36 +1,54 @@
-variable "apollo_address" {
-  description = "The Proxmox host address for Apollo node"
+variable "vault_address" {
+  description = "The address of the Vault server"
   type        = string
-  default     = "192.168.1.10"
+  default     = "http://127.0.0.1:8200"
 }
 
-variable "hades_address" {
-  description = "The Proxmox host address for Hades node"
+variable "vault_token" {
+  description = "Vault authentication token"
   type        = string
-  default     = "192.168.1.14"
+  sensitive   = true  # Prevents value from appearing in logs
 }
 
-variable "apollo_api_url" {
-  description = "The Proxmox API URL for Apollo node"
+variable "environment" {
+  description = "Deployment environment (dev, staging, prod)"
   type        = string
-  default     = "https://192.168.1.10:8006/api2/json"
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
 }
 
-variable "hades_api_url" {
-  description = "The Proxmox API URL for Hades node"
+variable "pve1_address" {
+  description = "The Proxmox host address for pve1 node"
   type        = string
-  default     = "https://192.168.1.14:8006/api2/json"
+  default     = "10.1.7.2"
+}
+
+variable "pve2_address" {
+  description = "The Proxmox host address for pve2 node"
+  type        = string
+  default     = "10.1.7.3"
+}
+
+variable "pve1_api_url" {
+  description = "The Proxmox API URL for pve1 node"
+  type        = string
+  default     = "https://10.1.7.2:8006/api2/json"
+}
+
+variable "pve2_api_url" {
+  description = "The Proxmox API URL for pve2 node"
+  type        = string
+  default     = "https://10.1.7.3:8006/api2/json"
 }
 
 variable "proxmox_user" {
   description = "The Proxmox user"
   type        = string
   default     = "root@pam"
-}
-
-variable "proxmox_password" {
-  description = "The Proxmox user password"
-  type        = string
 }
 
 variable "pub_ssh_key" {
@@ -42,42 +60,36 @@ variable "pub_ssh_key" {
 variable "gateway_ip" {
   description = "LXC gateway IP"
   type        = string
-  default     = "192.168.1.1"
+  default     = "10.1.7.1"
 }
 
-variable "gateway_ip_vlan_10" {
-  description = "LXC gateway IP for VLAN 10"
+variable "vpn_gateway_ip" {
+  description = "LXC gateway IP for VPN network"
   type        = string
-  default     = "192.168.10.1"
-}
-
-variable "gateway_ip_vlan_20" {
-  description = "LXC gateway IP for VLAN 20"
-  type        = string
-  default     = "192.168.20.1"
+  default     = "10.1.10.1"
 }
 
 variable "nvidia_driver_version" {
   description = "Nvidia driver version"
   type        = string
-  default     = "470.103.01"
+  default     = "580.119.02"
 }
 
 //
 // Services variables
 //
 
-variable "pi-hole-primary_lxcid" {
+variable "pi-hole_lxcid" {
   type    = number
   default = 100
 }
 
-variable "pi-hole-secondary_lxcid" {
+variable "cockpit_lxcid" {
   type    = number
   default = 200
 }
 
-variable "homepage_lxcid" {
+variable "mafl_lxcid" {
   type    = number
   default = 400
 }
@@ -92,144 +104,74 @@ variable "traefik_lxcid" {
   default = 501
 }
 
-variable "jellyfin_lxcid" {
+variable "jellyseerr_lxcid" {
   type    = number
   default = 502
 }
 
-variable "jellyseerr_lxcid" {
+variable "prowlarr_lxcid" {
   type    = number
   default = 503
 }
 
-variable "prowlarr_lxcid" {
+variable "bazarr_lxcid" {
   type    = number
   default = 504
 }
 
-variable "bazarr_lxcid" {
+variable "sonarr_lxcid" {
   type    = number
   default = 505
 }
 
-variable "sonarr_lxcid" {
+variable "radarr_lxcid" {
   type    = number
   default = 506
 }
 
-variable "radarr_lxcid" {
+variable "sabnzbd_lxcid" {
   type    = number
   default = 507
 }
 
-variable "lidarr_lxcid" {
+variable "recyclarr_lxcid" {
   type    = number
   default = 508
 }
 
-variable "tdarr_lxcid" {
+variable "plex_lxcid" {
   type    = number
   default = 509
 }
 
-variable "sabnzbd_lxcid" {
+variable "seerr_lxcid" {
   type    = number
   default = 510
 }
 
-variable "qbittorrent_lxcid" {
+variable "wireguard_lxcid" {
   type    = number
-  default = 511
+  default = 302
 }
 
-variable "navidrome_lxcid" {
+variable "openwrt_lxcid" {
   type    = number
-  default = 512
+  default = 301
 }
 
-variable "recyclarr_lxcid" {
+variable "tailscale_lxcid" {
   type    = number
-  default = 513
-}
-
-variable "antennas_lxcid" {
-  type    = number
-  default = 514
-}
-
-variable "plex_lxcid" {
-  type    = number
-  default = 515
-}
-
-variable "upgradinatorr_lxcid" {
-  type    = number
-  default = 516
-}
-
-variable "jellyplex-watched_lxcid" {
-  type    = number
-  default = 517
-}
-
-variable "firefly_lxcid" {
-  type    = number
-  default = 518
-}
-
-variable "tautulli_lxcid" {
-  type    = number
-  default = 519
-}
-
-variable "uptime-kuma_lxcid" {
-  type    = number
-  default = 520
-}
-
-variable "tvheadend_lxcid" {
-  type    = number
-  default = 521
-}
-
-variable "docker_lxcid" {
-  type    = number
-  default = 515
-}
-
-variable "keycloak_lxcid" {
-  type    = number
-  default = 516
+  default = 200
 }
 
 variable "syncthing_lxcid" {
   type    = number
-  default = 517
+  default = 201
 }
 
-variable "wireguard_lxcid" {
+variable "cookcli_lxcid" {
   type    = number
-  default = 518
-}
-
-variable "rclone_lxcid" {
-  type    = number
-  default = 519
-}
-
-variable "samba_lxcid" {
-  type    = number
-  default = 520
-}
-
-variable "crowdsec_lxcid" {
-  type    = number
-  default = 599
-}
-
-variable "homepage_mac" {
-  type    = string
-  default = "2E:08:E2:3F:BE:36"
+  default = 511
 }
 
 variable "traefik_mac" {
@@ -242,14 +184,14 @@ variable "bazarr_mac" {
   default = "EA:E4:60:8F:7F:B7"
 }
 
-variable "jellyfin_mac" {
-  type    = string
-  default = "7A:25:2B:1B:BE:EF"
-}
-
 variable "jellyseerr_mac" {
   type    = string
   default = "76:B4:86:28:A1:B4"
+}
+
+variable "seerr_mac" {
+  type    = string
+  default = "82:56:ec:6b:8e:04"
 }
 
 variable "sonarr_mac" {
@@ -262,17 +204,12 @@ variable "radarr_mac" {
   default = "36:67:C0:9C:48:9C"
 }
 
-variable "qbittorrent_mac" {
-  type    = string
-  default = "EE:28:5A:1B:D5:DD"
-}
-
 variable "sabnzbd_mac" {
   type    = string
   default = "12:E8:11:73:7E:38"
 }
 
-variable "samba_mac" {
+variable "cockpit_mac" {
   type    = string
   default = "CE:04:BF:59:F1:7F"
 }
@@ -292,29 +229,9 @@ variable "prowlarr_mac" {
   default = "06:90:EE:CD:05:87"
 }
 
-variable "tdarr_mac" {
-  type    = string
-  default = "2A:F0:E4:07:39:3B"
-}
-
 variable "network_mac" {
   type    = string
   default = "42:98:73:F5:A2:A8"
-}
-
-variable "docker_mac" {
-  type    = string
-  default = "F6:82:27:AF:F1:47"
-}
-
-variable "lidarr_mac" {
-  type    = string
-  default = "F6:1D:39:81:48:4C"
-}
-
-variable "navidrome_mac" {
-  type    = string
-  default = "26:18:8A:49:40:33"
 }
 
 variable "recyclarr_mac" {
@@ -327,197 +244,122 @@ variable "plex_mac" {
   default = "3A:8F:F6:96:dC:84"
 }
 
-variable "upgradinatorr_mac" {
+variable "mafl_mac" {
   type    = string
-  default = "aa:4f:68:04:d0:19"
+  default = "e6:74:a0:6c:31:13"
 }
 
-variable "jellyplex-watched_mac" {
+variable "tailscale_mac" {
   type    = string
-  default = "F6:28:9F:8D:56:B2"
+  default = "32:a1:07:95:ce:81"
 }
 
-variable "firefly_mac" {
+variable "syncthing_mac" {
   type    = string
-  default = "46:62:01:F6:A6:68"
+  default = "4a:d2:cc:4f:e6:b4"
 }
 
-variable "tautulli_mac" {
+variable "cookcli_mac" {
   type    = string
-  default = "52:A4:13:C1:D6:77"
-}
-
-variable "uptime-kuma_mac" {
-  type    = string
-  default = "C2:87:EA:D6:12:8D"
-}
-
-variable "tvheadend_mac" {
-  type    = string
-  default = "3A:E9:08:DD:A5:44"
-}
-
-variable "antennas_mac" {
-  type    = string
-  default = "96:F6:C9:Cd:6C:38"
-}
-
-variable "crowdsec_mac" {
-  type    = string
-  default = "7A:65:CB:DB:E0:12"
+  default = "a2:49:3b:c9:78:a2"
 }
 
 variable "pi-hole-primary_ip" {
   type    = string
-  default = "192.168.1.20/24"
+  default = "10.1.7.98/24"
 }
 
 variable "pi-hole-secondary_ip" {
   type    = string
-  default = "192.168.1.21/24"
-}
-
-variable "crowdsec_ip" {
-  type    = string
-  default = "192.168.1.22/24"
+  default = "10.1.7.99/24"
 }
 
 variable "traefik_ip" {
   type    = string
-  default = "192.168.1.29/24"
-}
-
-variable "jellyfin_ip" {
-  type    = string
-  default = "192.168.1.30/24"
+  default = "10.1.7.17/24"
 }
 
 variable "jellyseerr_ip" {
   type    = string
-  default = "192.168.1.31/24"
+  default = "10.1.7.9/24"
+}
+
+variable "seerr_ip" {
+  type    = string
+  default = "10.1.7.18/24"
 }
 
 variable "sonarr_ip" {
   type    = string
-  default = "192.168.1.34/24"
+  default = "10.1.7.15/24"
 }
 
 variable "radarr_ip" {
   type    = string
-  default = "192.168.1.35/24"
+  default = "10.1.7.16/24"
 }
 
 variable "prowlarr_ip" {
   type    = string
-  default = "192.168.1.32/24"
+  default = "10.1.7.11/24"
 }
 
 variable "sabnzbd_ip" {
   type    = string
-  default = "192.168.10.30/24"
-}
-
-variable "qbittorrent_ip" {
-  type    = string
-  default = "192.168.10.31/24"
-}
-
-variable "antennas_ip" {
-  type    = string
-  default = "192.168.10.32/24"
-}
-
-variable "tvheadend_ip" {
-  type    = string
-  default = "192.168.10.33/24"
+  default = "10.1.7.13/24"
 }
 
 variable "bazarr_ip" {
   type    = string
-  default = "192.168.1.33/24"
+  default = "10.1.7.14/24"
 }
 
-variable "samba_ip" {
+variable "cockpit_ip" {
   type    = string
-  default = "192.168.1.27/24"
+  default = "10.1.7.8/24"
 }
 
 variable "network_ip" {
   type    = string
-  default = "192.168.1.28/24"
-}
-
-variable "tdarr_ip" {
-  type    = string
-  default = "192.168.1.37/24"
-}
-
-variable "navidrome_ip" {
-  type    = string
-  default = "192.168.1.38/24"
+  default = "10.1.7.6/24"
 }
 
 variable "recyclarr_ip" {
   type    = string
-  default = "192.168.1.39/24"
+  default = "10.1.7.12/24"
 }
 
 variable "plex_ip" {
   type    = string
-  default = "192.168.1.40/24"
-}
-
-variable "upgradinatorr_ip" {
-  type    = string
-  default = "192.168.1.41/24"
-}
-
-variable "jellyplex-watched_ip" {
-  type    = string
-  default = "192.168.1.42/24"
-}
-
-variable "firefly_ip" {
-  type    = string
-  default = "192.168.1.43/24"
-}
-
-variable "tautulli_ip" {
-  type    = string
-  default = "192.168.1.44/24"
-}
-
-variable "uptime-kuma_ip" {
-  type    = string
-  default = "192.168.1.45/24"
-}
-
-variable "docker_ip" {
-  type    = string
-  default = "192.168.1.34/24"
-}
-
-variable "syncthing_ip" {
-  type    = string
-  default = "192.168.1.39/24"
-}
-
-variable "lidarr_ip" {
-  type    = string
-  default = "192.168.1.36/24"
+  default = "10.1.7.10/24"
 }
 
 variable "wireguard_ip" {
   type    = string
-  default = "192.168.1.39/24"
+  default = "10.1.10.2/24"
 }
 
-variable "rclone_ip" {
+variable "openwrt_ip" {
   type    = string
-  default = "192.168.1.41/24"
+  default = "10.1.7.97/24"
 }
 
-variable "homepage_ip" {
+variable "tailscale_ip" {
   type    = string
-  default = "192.168.1.16/24"
+  default = "10.1.7.96/24"
+}
+
+variable "mafl_ip" {
+  type    = string
+  default = "10.1.7.19/24"
+}
+
+variable "syncthing_ip" {
+  type    = string
+  default = "10.1.7.20/24"
+}
+
+variable "cookcli_ip" {
+  type    = string
+  default = "10.1.7.21/24"
 }

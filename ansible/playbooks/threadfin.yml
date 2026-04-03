@@ -1,5 +1,0 @@
----
-- hosts: threadfin
-  roles:
-    - { role: common, tags: all }
-    - { role: threadfin, tags: threadfin }

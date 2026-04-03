@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-syncthing-http:
+      rule: "Host(`syncthing.{{ external_domain }}`)"
+      service: syncthing
+      middlewares:
+        - https-redirect
+
+    to-syncthing:
+      rule: "Host(`syncthing.{{ external_domain }}`)"
+      service: syncthing
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    syncthing:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_syncthing_ip }}:8384

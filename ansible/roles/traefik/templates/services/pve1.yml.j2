@@ -1,0 +1,25 @@
+---
+http:
+  routers:
+    to-pve1-http:
+      rule: "Host(`pve1.{{ external_domain }}`)"
+      service: pve1
+      middlewares:
+        - https-redirect
+
+    to-pve1:
+      rule: "Host(`pve1.{{ external_domain }}`)"
+      service: pve1
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    pve1:
+      loadBalancer:
+        serversTransport: insecure-transport
+        servers:
+          - url: https://10.1.7.2:8006

@@ -1,6 +1,0 @@
----
-- hosts: jellyfin
-  roles:
-    - { role: common, tags: all }
-    - { role: nvidia, tags: all }
-    - { role: jellyfin, tags: jellyfin }

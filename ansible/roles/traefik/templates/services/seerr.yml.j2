@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-seerr-http:
+      rule: "Host(`requests.{{ external_domain }}`)"
+      service: seerr
+      middlewares:
+        - https-redirect
+
+    to-seerr:
+      rule: "Host(`requests.{{ external_domain }}`)"
+      service: seerr
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    seerr:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_seerr_ip }}:5055

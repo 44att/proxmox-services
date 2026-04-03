@@ -1,30 +1,19 @@
 ---
 - import_playbook: ./playbooks/bazarr.yml
-- import_playbook: ./playbooks/jellyfin.yml
+- import_playbook: ./playbooks/cockpit.yml
 - import_playbook: ./playbooks/jellyseerr.yml
 - import_playbook: ./playbooks/lidarr.yml
-# - import_playbook: ./playbooks/network.yml
-- import_playbook: ./playbooks/sabnzbd.yml
+- import_playbook: ./playbooks/network.yml
 - import_playbook: ./playbooks/pi-hole.yml
-- import_playbook: ./playbooks/prowlarr.yml
-- import_playbook: ./playbooks/qbittorrent.yml
-- import_playbook: ./playbooks/radarr.yml
-# - import_playbook: ./playbooks/rclone.yml
-# - import_playbook: ./playbooks/samba.yml
-- import_playbook: ./playbooks/sonarr.yml
-# - import_playbook: ./playbooks/syncthing.yml
-# - import_playbook: ./playbooks/tdarr.yml
-- import_playbook: ./playbooks/traefik.yml
-- import_playbook: ./playbooks/homepage.yml
-# - import_playbook: ./playbooks/navidrome.yml
-- import_playbook: ./playbooks/crowdsec.yml
-- import_playbook: ./playbooks/recyclarr.yml
-# - import_playbook: ./playbooks/threadfin.yml
 - import_playbook: ./playbooks/plex.yml
-- import_playbook: ./playbooks/upgradinatorr.yml
-- import_playbook: ./playbooks/jellyplex-watched.yml
-# - import_playbook: ./playbooks/firefly.yml
-- import_playbook: ./playbooks/tautulli.yml
-- import_playbook: ./playbooks/uptime-kuma.yml
-- import_playbook: ./playbooks/tvheadend.yml
-- import_playbook: ./playbooks/antennas.yml
+- import_playbook: ./playbooks/prowlarr.yml
+- import_playbook: ./playbooks/radarr.yml
+- import_playbook: ./playbooks/recyclarr.yml
+- import_playbook: ./playbooks/sabnzbd.yml
+- import_playbook: ./playbooks/samba.yml
+- import_playbook: ./playbooks/seerr.yml
+- import_playbook: ./playbooks/sonarr.yml
+- import_playbook: ./playbooks/syncthing.yml
+- import_playbook: ./playbooks/tailscale.yml
+- import_playbook: ./playbooks/traefik.yml
+- import_playbook: ./playbooks/wireguard.yml

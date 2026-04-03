@@ -1,0 +1,50 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+
+- name: Create Tailscale group
+  group:
+    name: tailscale
+    gid: 10000
+    state: present
+
+- name: Create Tailscale user
+  user:
+    name: tailscale
+    uid: 1000
+    groups: tailscale
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Enable IP forwarding
+  lineinfile:
+    path: /etc/sysctl.d/99-tailscale.conf
+    line: "{{ item }}"
+    create: true
+  loop:
+    - net.ipv4.ip_forward=1
+    - net.ipv6.conf.all.forwarding=1
+  register: ip_forwarding_enabled
+
+- name: Reload sysctl file
+  when: ip_forwarding_enabled.changed
+  command:
+    argv:
+      - sysctl
+      - -p
+      - /etc/sysctl.d/99-tailscale.conf
+  notify:
+    - Reboot LXC
+
+- name: Install Tailscale
+  shell: >
+    curl -fsSL https://tailscale.com/install.sh | sh &&
+    tailscale up --auth-key={{ tailscale_auth_key }} --advertise-routes=10.1.7.0/24 --ssh

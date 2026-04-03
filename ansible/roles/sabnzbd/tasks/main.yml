@@ -1,11 +1,17 @@
+---
+- name: Include my vars
+  include_vars: /Users/matt/.ansible/.default_vars.yml
+  
 - name: Create SABnzbd group
   group:
     name: sabnzbd
+    gid: 10000
     state: present
 
 - name: Create SABnzbd user
   user:
     name: sabnzbd
+    uid: 1000
     groups: sabnzbd
     shell: /sbin/nologin
     append: true
@@ -18,6 +24,12 @@
       - apt-transport-https
       - gnupg
     state: latest
+
+- name: Create Sabnzbd directory if it does not exist
+  file:
+    path: /opt/sabnzbd
+    state: directory
+    mode: 0755
 
 - name: Add the Universe and Multiverse repositories
   apt_repository:
@@ -51,11 +63,38 @@
       - sabnzbdplus
     state: latest
 
+- name: Synchronize Sabnzbd config from backup source
+  synchronize:
+    src: "/Sabnzbd-data/"
+    dest: "/opt/sabnzbd/data"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Sazarr directory
+  file:
+    path: /opt/sabnzbd/
+    state: directory
+    recurse: true
+    owner: sabnzbd
+    group: sabnzbd
+
 - name: Copy SABnzbd config file
-  copy:
-    src: sabnzbdplus
+  template:
+    src: sabnzbdplus.j2
     dest: /etc/default/sabnzbdplus
     owner: root
     group: root
   notify:
     - Start SABnzbd
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup sabnzbd"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup sabnzbd"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog /opt/sabnzbd/data/ /Sabnzbd-data"

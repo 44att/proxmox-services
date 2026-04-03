@@ -1,0 +1,7 @@
+---
+- hosts: seerr
+  vars_files:
+    - ../../terraform/tf_ansible_vars.yml
+  roles:
+    - { role: common }
+    - { role: seerr, tags: seerr }

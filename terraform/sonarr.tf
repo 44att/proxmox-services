@@ -9,30 +9,11 @@ resource "proxmox_lxc" "sonarr" {
   onboot          = true
   vmid            = var.sonarr_lxcid
   memory          = 1024
-  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
     size    = "4G"
-  }
-
-  mountpoint {
-    mp      = "/Sonarr-data"
-    size    = "8G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/sonarr"
-    volume  = "/mnt/pve/app_data/sonarr"
-  }
-
-  mountpoint {
-    mp      = "/mnt/pve/media"
-    size    = "4000G"
-    slot    = 1
-    key     = "1"
-    storage = "/mnt/pve/media"
-    volume  = "/mnt/pve/media"
   }
 
   network {
@@ -44,10 +25,17 @@ resource "proxmox_lxc" "sonarr" {
     hwaddr = var.sonarr_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage,
-      mountpoint[1].storage
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
+      host     = var.pve2_address
+    }
+    inline = [
+      "pct set ${var.sonarr_lxcid} -mp0 /mnt/pve/media_root,mp=/mnt/media_root",
+      "pct set ${var.sonarr_lxcid} -mp1 /mnt/pve/app_config/sonarr,mp=/Sonarr-data",
+      "pct reboot ${var.sonarr_lxcid}",
     ]
   }
 }

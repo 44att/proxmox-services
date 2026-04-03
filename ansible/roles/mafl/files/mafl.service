@@ -1,0 +1,14 @@
+[Unit]
+Description=Mafl Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=NODE_ENV=production
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/mafl
+ExecStart=/root/.nvm/versions/node/v22.22.0/bin/node .output/server/index.mjs
+
+[Install]
+WantedBy=multi-user.target

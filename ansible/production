@@ -1,111 +1,70 @@
 [common]
-192.168.1.20
-192.168.1.21
-; 192.168.1.39
-dashboard.home.lan
-network.home.lan
-traefik.home.lan
-jellyfin.home.lan
-jellyseerr.home.lan
-prowlarr.home.lan
-bazarr.home.lan
-sonarr.home.lan
-radarr.home.lan
-recyclarr.home.lan
-lidarr.home.lan
-tdarr.home.lan
-sabnzbd.home.lan
-qbittorrent.home.lan
-navidrome.home.lan
-crowdsec.home.lan
-threadfin.home.lan
-plex.home.lan
-upgradinatorr.home.lan
-jellyplex-watched.home.lan
-firefly.home.lan
-tautulli.home.lan
-uptime-kuma.home.lan
-tvheadend.home.lan
-antennas.home.lan
-
-[pi_hole]
-192.168.1.20
-192.168.1.21
-
-; [wireguard]
-; 192.168.1.39
-
-[homepage]
-dashboard.home.lan
-
-[network]
-network.home.lan
-
-[traefik]
-traefik.home.lan
-
-[jellyfin]
-jellyfin.home.lan
-
-[jellyseerr]
-jellyseerr.home.lan
-
-[prowlarr]
-prowlarr.home.lan
+10.1.7.6
+10.1.7.7
+10.1.7.8
+10.1.7.9
+10.1.7.10
+10.1.7.11
+10.1.7.12
+10.1.7.13
+10.1.7.14
+10.1.7.15
+10.1.7.16
+10.1.7.17
+10.1.7.18
+10.1.7.19
+10.1.7.20
+10.1.7.21
+10.1.7.96
+10.1.7.98
+10.1.7.99
+10.1.10.2
 
 [bazarr]
-bazarr.home.lan
+10.1.7.14
 
-[sonarr]
-sonarr.home.lan
+[cockpit]
+10.1.7.8
 
-[radarr]
-radarr.home.lan
+[jellyseerr]
+10.1.7.9
 
-[recyclarr]
-recyclarr.home.lan
+[tailscale]
+10.1.7.96
 
-[lidarr]
-lidarr.home.lan
-
-[tdarr]
-tdarr.home.lan
-
-[sabnzbd]
-sabnzbd.home.lan
-
-[qbittorrent]
-qbittorrent.home.lan
-
-[navidrome]
-navidrome.home.lan
-
-[crowdsec]
-crowdsec.home.lan
-
-[threadfin]
-threadfin.home.lan
+[pi_hole]
+10.1.7.98
+10.1.7.99
 
 [plex]
-plex.home.lan
+10.1.7.10
 
-[upgradinatorr]
-upgradinatorr.home.lan
+[prowlarr]
+10.1.7.11
 
-[jellyplex_watched]
-jellyplex-watched.home.lan
+[recyclarr]
+10.1.7.12
 
-[firefly]
-firefly.home.lan
+[sabnzbd]
+10.1.7.13
 
-[tautulli]
-tautulli.home.lan
+[sonarr]
+10.1.7.15
 
-[uptime_kuma]
-uptime-kuma.home.lan
+[radarr]
+10.1.7.16
 
-[tvheadend]
-tvheadend.home.lan
+[traefik]
+10.1.7.17
 
-[antennas]
-antennas.home.lan
+[seerr]
+10.1.7.18
+
+[mafl]
+10.1.7.19
+
+[syncthing]
+10.1.7.20
+
+[cookcli]
+10.1.7.21

@@ -9,7 +9,6 @@ resource "proxmox_lxc" "sabnzbd" {
   onboot          = true
   vmid            = var.sabnzbd_lxcid
   memory          = 2048
-  nameserver      = var.gateway_ip_vlan_10
 
   // Terraform will crash without rootfs defined
   rootfs {
@@ -17,38 +16,25 @@ resource "proxmox_lxc" "sabnzbd" {
     size    = "4G"
   }
 
-  mountpoint {
-    mp      = "/config"
-    size    = "8G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/sabnzbd/config"
-    volume  = "/mnt/pve/app_data/sabnzbd/config"
-  }
-
-  mountpoint {
-    mp      = "/mnt/pve/media/usenet"
-    size    = "250G"
-    slot    = 1
-    key     = "1"
-    storage = "/mnt/pve/media/usenet"
-    volume  = "/mnt/pve/media/usenet"
-  }
-
   network {
     name   = "eth0"
     bridge = "vmbr0"
-    tag    = 10
-    gw     = var.gateway_ip_vlan_10
+    gw     = var.gateway_ip
     ip     = var.sabnzbd_ip
-    ip6    = "auto"
     hwaddr = var.sabnzbd_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage,
-      mountpoint[1].storage
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
+      host     = var.pve2_address
+    }
+    inline = [
+      "pct set ${var.sabnzbd_lxcid} -mp0 /mnt/pve/media_root/usenet,mp=/mnt/media_root/usenet",
+      "pct set ${var.sabnzbd_lxcid} -mp1 /mnt/pve/app_config/sabnzbd,mp=/Sabnzbd-data",
+      "pct reboot ${var.sabnzbd_lxcid}",
     ]
   }
 }

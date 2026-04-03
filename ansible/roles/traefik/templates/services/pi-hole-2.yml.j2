@@ -21,4 +21,4 @@ http:
     pi-hole-2:
       loadBalancer:
         servers:
-          - url: http://192.168.1.21
+          - url: http://{{ tf_pi_hole_secondary_ip }}

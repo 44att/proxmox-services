@@ -1,0 +1,41 @@
+---
+- name: Create CookCLI group
+  group:
+    name: cookcli
+    gid: 10000
+    state: present
+
+- name: Create CookCLI user
+  user:
+    name: cookcli
+    uid: 1000
+    groups: cookcli
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Install CookCLI
+  unarchive:
+    src: https://github.com/cooklang/cookcli/releases/download/v0.27.2/cook-x86_64-unknown-linux-gnu.tar.gz
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    remote_src: true
+  notify:
+    - Start CookCLI
+
+- name: Copy systemd service file to server
+  copy:
+    src: cook.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start CookCLI

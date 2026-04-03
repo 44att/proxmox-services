@@ -3,13 +3,18 @@ Description=Prowlarr Daemon
 After=syslog.target network.target
 
 [Service]
+WorkingDirectory=/opt/Prowlarr/
 User=prowlarr
 Group=prowlarr
+Restart=on-failure
+RestartSec=5
 Type=simple
-ExecStart=/opt/Prowlarr/Prowlarr -nobrowser -data=/Prowlarr-data/
+ExecStart=/opt/Prowlarr/Prowlarr -nobrowser -data=/var/lib/prowlarr/
+KillSignal=SIGINT
 TimeoutStopSec=20
+SyslogIdentifier=prowlarr
+ExecStartPre=/bin/sleep 30
 KillMode=process
-Restart=always
 
 [Install]
 WantedBy=multi-user.target

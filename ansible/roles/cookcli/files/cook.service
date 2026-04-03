@@ -1,0 +1,13 @@
+[Unit]
+Description=Cook Server Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/cook server /mnt/pve/app_config/cookcli --host
+SyslogIdentifier=cook
+
+[Install]
+WantedBy=multi-user.target

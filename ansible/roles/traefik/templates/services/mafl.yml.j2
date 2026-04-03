@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-mafl-http:
+      rule: "Host(`dashboard.{{ external_domain }}`)"
+      service: mafl
+      middlewares:
+        - https-redirect
+
+    to-mafl:
+      rule: "Host(`dashboard.{{ external_domain }}`)"
+      service: mafl
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    mafl:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_mafl_ip }}:3000

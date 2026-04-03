@@ -1,0 +1,6 @@
+---
+- name: Start CookCLI
+  systemd:
+    name: cook
+    state: restarted
+    enabled: true

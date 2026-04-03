@@ -2,11 +2,13 @@
 - name: Create Jellyseerr group
   group:
     name: jellyseerr
+    gid: 10000
     state: present
 
 - name: Create Jellyseerr user
   user:
     name: jellyseerr
+    uid: 1000
     groups: jellyseerr
     shell: /sbin/nologin
     append: true
@@ -16,43 +18,59 @@
 - name: Install packages
   apt:
     pkg:
-      - apt-transport-https
-      - gnupg
+      - curl
     state: latest
 
-- name: Create Jellyseerr directory if it does not exist
+- name: Create Jellyseerr directories if they don't exist
   file:
-    path: /opt/jellyseerr
+    path: "{{ item }}"
     state: directory
     mode: 0755
+  loop:
+    - /opt/jellyseerr
+    - /etc/jellyseerr
+    - /root/.nvm
+    - /root/.cache/node
 
 - name: Add Jellyseerr directory as safe in git config
-  shell:
-    cmd: git config --global --add safe.directory /opt/jellyseerr
+  shell: >
+    git config --global --add safe.directory /opt/jellyseerr
 
-- name: Install the gpg keys for nodejs LTS
-  apt_key:
-    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
-    state: present
-    
-- name: Add the nodejs LTS repository
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release }} main"
-    state: present
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
 
-- name: Update repo cache
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
   changed_when: false
-  apt:
-    update_cache: true
 
-- name: Install nodejs package
-  apt:
-    name: nodejs
-    state: present
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install 22
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
 
-- name: Install yarn
-  shell:
-    cmd: corepack enable; corepack prepare yarn@stable --activate
+- name: Install pnpm
+  shell: >
+    source /root/nvm.env &&
+    corepack enable pnpm
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
 
 - name: Download Jellyseerr
   git:
@@ -63,17 +81,56 @@
     version: main
 
 - name: Install Jellyseerr
-  shell:
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-9 &&
+    pnpm install --frozen-lockfile
+  args:
+    executable: /bin/bash
     chdir: /opt/jellyseerr
-    cmd: yarn install; yarn --silent run build
+  environment:
+    CYPRESS_INSTALL_BINARY: '0'
+    HUSKY: '0' 
+  changed_when: false
 
-- name: Recursively change ownership of Jellyseerr directory
+- name: Build Jellyseerr 
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-9 &&
+    pnpm build
+  args:
+    executable: /bin/bash
+    chdir: /opt/jellyseerr
+  environment:
+    GENERATE_SOURCEMAP: 'false'
+  changed_when: false
+
+- name: Clear build cache
+  shell: >
+    source /root/nvm.env &&
+    corepack use pnpm@latest-9 &&
+    pnpm store prune
+  args:
+    executable: /bin/bash
+    chdir: /opt/jellyseerr
+  changed_when: false
+
+- name: Recursively change ownership of Jellyseerr directories
   file:
-    path: /opt/jellyseerr/
+    path: "{{ item }}"
     state: directory
     recurse: true
     owner: jellyseerr
     group: jellyseerr
+  loop:
+    - /opt/jellyseerr/
+    - /etc/jellyseerr/
+
+- name: Synchronize Jellyseerr config from backup source
+  synchronize:
+    src: "/Jellyseerr-data/"
+    dest: "/etc/jellyseerr/"
+  delegate_to: "{{ inventory_hostname }}"
 
 - name: Copy Jellyseerr systemd service file
   copy:
@@ -83,3 +140,16 @@
     group: root
   notify:
     - Start Jellyseerr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup jellyseerr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup jellyseerr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog /etc/jellyseerr/ /Jellyseerr-data"

@@ -10,30 +10,11 @@ resource "proxmox_lxc" "plex" {
   vmid            = var.plex_lxcid
   memory          = 8192
   cores           = 2
-  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
     size    = "80G"
-  }
-
-  mountpoint {
-    mp      = "/Plex-data"
-    size    = "8G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/plex"
-    volume  = "/mnt/pve/app_data/plex"
-  }
-
-  mountpoint {
-    mp      = "/mnt/pve/media/media"
-    size    = "4000G"
-    slot    = 1
-    key     = "1"
-    storage = "/mnt/pve/media/media"
-    volume  = "/mnt/pve/media/media"
   }
 
   network {
@@ -45,24 +26,17 @@ resource "proxmox_lxc" "plex" {
     hwaddr = var.plex_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage,
-      mountpoint[1].storage
-    ]
-  }
-
   provisioner "remote-exec" {
     connection {
       type     = "ssh"
       user     = "root"
-      password = var.proxmox_password
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
       host     = var.pve2_address
     }
     inline = [
       "grep -qxF 'lxc.cgroup2.devices.allow: c 195:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 195:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.cgroup2.devices.allow: c 509:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 509:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.cgroup2.devices.allow: c 226:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 226:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'lxc.cgroup2.devices.allow: c 234:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 234:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'lxc.cgroup2.devices.allow: c 237:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 237:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
       "grep -qxF 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
       "grep -qxF 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
       "grep -qxF 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
@@ -71,7 +45,10 @@ resource "proxmox_lxc" "plex" {
       "grep -qxF 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
       "rm -f ~/.nvidia-driver-version",
       "echo '${var.nvidia_driver_version}' >> ~/.nvidia-driver-version",
-      "pct push ${var.plex_lxcid} ~/.nvidia-driver-version /root/.nvidia-driver-version"
+      "pct push ${var.plex_lxcid} ~/.nvidia-driver-version /root/.nvidia-driver-version",
+      "pct set ${var.plex_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media",
+      "pct set ${var.plex_lxcid} -mp1 /mnt/pve/app_config/plex,mp=/Plex-data",
+      "pct reboot ${var.plex_lxcid}",
     ]
   }
 }

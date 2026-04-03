@@ -2,11 +2,13 @@
 - name: Create Bazarr group
   group:
     name: bazarr
+    gid: 10000
     state: present
 
 - name: Create Bazarr user
   user:
     name: bazarr
+    uid: 1000
     groups: bazarr
     shell: /sbin/nologin
     append: true
@@ -18,25 +20,32 @@
     pkg:
       - python3-dev
       - python3-pip
-      - python3-distutils
+      - python3-setuptools
+      - python3-venv
       - unrar
       - unzip
     state: latest
 
+- name: Create python virtualenv
+  command:
+    cmd: python3 -m venv /opt/venv/
+    creates: "/opt/venv"
+
 - name: Create Bazarr directory if it does not exist
   file:
-    path: /opt/bazarr/data
+    path: /opt/bazarr
     state: directory
     mode: 0755
 
 - name: Install Bazarr
   unarchive:
-    src: https://github.com/morpheus65535/bazarr/releases/download/v1.4.0/bazarr.zip
+    src: https://github.com/morpheus65535/bazarr/releases/download/v1.5.6/bazarr.zip
     dest: /opt/bazarr
     remote_src: true
 
 - name: Install specified python requirements
   pip:
+    virtualenv: /opt/venv
     requirements: /opt/bazarr/requirements.txt
 
 - name: Synchronize Bazarr config from backup source
@@ -73,4 +82,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauz --no-perms --no-owner --no-group /opt/bazarr/data/ /Bazarr-data"
+    job: "rsync -qauzog /opt/bazarr/data/ /Bazarr-data"

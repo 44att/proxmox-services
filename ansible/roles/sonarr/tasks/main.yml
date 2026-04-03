@@ -2,11 +2,13 @@
 - name: Create Sonarr group
   group:
     name: sonarr
+    gid: 10000
     state: present
 
 - name: Create Sonarr user
   user:
     name: sonarr
+    uid: 1000
     groups: sonarr
     shell: /sbin/nologin
     append: true
@@ -70,4 +72,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauz --no-perms --no-owner --no-group /var/lib/sonarr/ /Sonarr-data"
+    job: "rsync -qauzog /var/lib/sonarr/ /Sonarr-data"

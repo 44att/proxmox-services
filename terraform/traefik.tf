@@ -8,21 +8,11 @@ resource "proxmox_lxc" "traefik" {
   start           = true
   onboot          = true
   vmid            = var.traefik_lxcid
-  nameserver      = var.gateway_ip
 
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
     size    = "4G"
-  }
-
-  mountpoint {
-    mp      = "/traefik-config"
-    size    = "8G"
-    slot    = 0
-    key     = "0"
-    storage = "/mnt/pve/app_data/traefik"
-    volume  = "/mnt/pve/app_data/traefik"
   }
 
   network {
@@ -34,9 +24,16 @@ resource "proxmox_lxc" "traefik" {
     hwaddr = var.traefik_mac
   }
 
-  lifecycle {
-    ignore_changes = [
-      mountpoint[0].storage
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      user     = "root"
+      password = data.vault_kv_secret_v2.proxmox-pwd.data["password"]
+      host     = var.pve2_address
+    }
+    inline = [
+      "pct set ${var.traefik_lxcid} -mp0 /mnt/pve/app_config/traefik,mp=/traefik-config",
+      "pct reboot ${var.traefik_lxcid}",
     ]
   }
 }
