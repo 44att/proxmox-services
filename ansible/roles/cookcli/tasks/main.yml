@@ -23,7 +23,7 @@
 
 - name: Install CookCLI
   unarchive:
-    src: https://github.com/cooklang/cookcli/releases/download/v0.27.2/cook-x86_64-unknown-linux-gnu.tar.gz
+    src: https://github.com/cooklang/cookcli/releases/download/v0.29.0/cook-x86_64-unknown-linux-gnu.tar.gz
     dest: /usr/local/bin
     owner: root
     group: root
