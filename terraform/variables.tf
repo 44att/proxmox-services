@@ -174,6 +174,11 @@ variable "cookcli_lxcid" {
   default = 511
 }
 
+variable "donetick_lxcid" {
+  type    = number
+  default = 512
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -262,6 +267,11 @@ variable "syncthing_mac" {
 variable "cookcli_mac" {
   type    = string
   default = "a2:49:3b:c9:78:a2"
+}
+
+variable "donetick_mac" {
+  type    = string
+  default = "92:d6:b0:ce:49:ff"
 }
 
 variable "pi-hole-primary_ip" {
@@ -362,4 +372,9 @@ variable "syncthing_ip" {
 variable "cookcli_ip" {
   type    = string
   default = "10.1.7.21/24"
+}
+
+variable "donetick_ip" {
+  type    = string
+  default = "10.1.7.22/24"
 }

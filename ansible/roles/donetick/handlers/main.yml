@@ -1,0 +1,6 @@
+---
+- name: Start Donetick
+  systemd:
+    name: donetick
+    state: restarted
+    daemon_reload: true

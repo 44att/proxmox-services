@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-donetick-http:
+      rule: "Host(`tasks.{{ external_domain }}`)"
+      service: donetick
+      middlewares:
+        - https-redirect
+
+    to-donetick:
+      rule: "Host(`tasks.{{ external_domain }}`)"
+      service: donetick
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    donetick:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_donetick_ip }}:2021

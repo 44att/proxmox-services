@@ -1,0 +1,16 @@
+[Unit]
+Description=Donetick Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=DT_ENV=selfhosted
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/donetick
+User=donetick
+Group=donetick
+ExecStart=/opt/donetick/donetick
+
+[Install]
+WantedBy=multi-user.target

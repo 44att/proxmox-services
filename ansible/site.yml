@@ -1,6 +1,7 @@
 ---
 - import_playbook: ./playbooks/bazarr.yml
 - import_playbook: ./playbooks/cockpit.yml
+- import_playbook: ./playbooks/donetick.yml
 - import_playbook: ./playbooks/jellyseerr.yml
 - import_playbook: ./playbooks/lidarr.yml
 - import_playbook: ./playbooks/network.yml

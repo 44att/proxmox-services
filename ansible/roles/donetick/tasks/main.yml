@@ -1,0 +1,66 @@
+---
+- name: Create Donetick group
+  group:
+    name: donetick
+    gid: 10000
+    state: present
+
+- name: Create Donetick user
+  user:
+    name: donetick
+    uid: 1000
+    groups: donetick
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Create Donetick directory if it doesn't exist
+  file:
+    path: /opt/donetick
+    state: directory
+    mode: 0755
+
+- name: Install Donetick
+  unarchive:
+    src: https://github.com/donetick/donetick/releases/download/v0.1.75/donetick_Linux_x86_64.tar.gz
+    dest: /opt/donetick
+    owner: root
+    group: root
+    remote_src: true
+  notify:
+    - Start Donetick
+
+- name: Remove config directory that the install overrides
+  file:
+    path: /opt/donetick/config
+    state: absent
+
+- name: Recursively change ownership of Donetick directory
+  file:
+    path: /opt/donetick/
+    state: directory
+    recurse: true
+    owner: donetick
+    group: donetick
+
+- name: Symlink config directory
+  file:
+    src: /Donetick-data
+    dest: /opt/donetick/config
+    state: link
+
+- name: Copy Donetick systemd service file
+  copy:
+    src: donetick.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Donetick
