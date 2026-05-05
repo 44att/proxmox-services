@@ -4,7 +4,7 @@
 
 - name: Install Traefik
   unarchive:
-    src: https://github.com/traefik/traefik/releases/download/v3.6.14/traefik_v3.6.14_linux_amd64.tar.gz
+    src: https://github.com/traefik/traefik/releases/download/v3.6.16/traefik_v3.6.16_linux_amd64.tar.gz
     dest: /usr/local/bin
     remote_src: true
   notify:
