@@ -1,0 +1,4 @@
+---
+- hosts: upgrade_dependencies
+  roles:
+    - { role: upgrade_dependencies }

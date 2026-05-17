@@ -1,0 +1,6 @@
+---
+- name: Upgrade dependencies
+  apt:
+    update_cache: true
+    upgrade: full
+  tags: always
