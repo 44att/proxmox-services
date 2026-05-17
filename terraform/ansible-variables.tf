@@ -7,7 +7,6 @@ resource "local_file" "tf_ansible_vars_new" {
     # LXC Ids
     tf_bazarr_lxcid: ${var.bazarr_lxcid}
     tf_cockpit_lxcid: ${var.cockpit_lxcid}
-    tf_jellyseerr_lxcid: ${var.jellyseerr_lxcid}
     tf_network_lxcid: ${var.network_lxcid}
     tf_plex_lxcid: ${var.plex_lxcid}
     tf_prowlarr_lxcid: ${var.prowlarr_lxcid}
@@ -26,7 +25,6 @@ resource "local_file" "tf_ansible_vars_new" {
     # IPs
     tf_bazarr_ip: ${trimsuffix(var.bazarr_ip, "/24")}
     tf_cockpit_ip: ${trimsuffix(var.cockpit_ip, "/24")}
-    tf_jellyseerr_ip: ${trimsuffix(var.jellyseerr_ip, "/24")}
     tf_network_ip: ${trimsuffix(var.network_ip, "/24")}
     tf_plex_ip: ${trimsuffix(var.plex_ip, "/24")}
     tf_prowlarr_ip: ${trimsuffix(var.prowlarr_ip, "/24")}

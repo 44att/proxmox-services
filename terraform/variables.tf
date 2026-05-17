@@ -104,11 +104,6 @@ variable "traefik_lxcid" {
   default = 501
 }
 
-variable "jellyseerr_lxcid" {
-  type    = number
-  default = 502
-}
-
 variable "prowlarr_lxcid" {
   type    = number
   default = 503
@@ -187,11 +182,6 @@ variable "traefik_mac" {
 variable "bazarr_mac" {
   type    = string
   default = "EA:E4:60:8F:7F:B7"
-}
-
-variable "jellyseerr_mac" {
-  type    = string
-  default = "76:B4:86:28:A1:B4"
 }
 
 variable "seerr_mac" {
@@ -287,11 +277,6 @@ variable "pi-hole-secondary_ip" {
 variable "traefik_ip" {
   type    = string
   default = "10.1.7.17/24"
-}
-
-variable "jellyseerr_ip" {
-  type    = string
-  default = "10.1.7.9/24"
 }
 
 variable "seerr_ip" {
