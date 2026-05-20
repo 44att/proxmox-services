@@ -104,6 +104,11 @@ variable "traefik_lxcid" {
   default = 501
 }
 
+variable "lidarr_lxcid" {
+  type    = number
+  default = 502
+}
+
 variable "prowlarr_lxcid" {
   type    = number
   default = 503
@@ -264,6 +269,11 @@ variable "donetick_mac" {
   default = "92:d6:b0:ce:49:ff"
 }
 
+variable "lidarr_mac" {
+  type    = string
+  default = "82:f7:81:55:ff:f5"
+}
+
 variable "pi-hole-primary_ip" {
   type    = string
   default = "10.1.7.98/24"
@@ -362,4 +372,9 @@ variable "cookcli_ip" {
 variable "donetick_ip" {
   type    = string
   default = "10.1.7.22/24"
+}
+
+variable "lidarr_ip" {
+  type    = string
+  default = "10.1.7.23/24"
 }

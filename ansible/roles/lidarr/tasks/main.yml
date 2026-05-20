@@ -1,0 +1,76 @@
+---
+- name: Create Lidarr group
+  group:
+    name: lidarr
+    gid: 10000
+    state: present
+
+- name: Create Lidarr user
+  user:
+    name: lidarr
+    uid: 1000
+    groups: lidarr
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+      - mediainfo
+      - sqlite3
+      - libchromaprint-tools
+    state: latest
+
+- name: Create Lidarr directory if it does not exist
+  file:
+    path: /var/lib/lidarr
+    state: directory
+    mode: 0755
+
+- name: Install Lidarr
+  unarchive:
+    src: https://github.com/Lidarr/Lidarr/releases/download/v3.1.0.4875/Lidarr.master.3.1.0.4875.linux-core-x64.tar.gz
+    dest: /opt/
+    remote_src: true
+
+- name: Synchronize Lidarr config from backup source
+  synchronize:
+    src: "/Lidarr-data/"
+    dest: "/var/lib/lidarr/"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Lidarr directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: lidarr
+    group: lidarr
+  loop:
+    - /opt/Lidarr
+    - /var/lib/lidarr
+
+- name: Copy systemd service file to server
+  copy:
+    src: lidarr.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Lidarr
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup lidarr"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup lidarr"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog /var/lib/lidarr/ /Lidarr-data"
