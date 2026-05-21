@@ -1,0 +1,6 @@
+---
+- name: Start Multi-scrobbler
+  systemd:
+    name: multi-scrobbler
+    state: restarted
+    daemon_reload: true

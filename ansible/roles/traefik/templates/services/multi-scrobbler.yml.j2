@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-multi-scrobbler-http:
+      rule: "Host(`scrobbles.{{ external_domain }}`)"
+      service: multi-scrobbler
+      middlewares:
+        - https-redirect
+
+    to-multi-scrobbler:
+      rule: "Host(`scrobbles.{{ external_domain }}`)"
+      service: multi-scrobbler
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    multi-scrobbler:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_multi_scrobbler_ip }}:9078

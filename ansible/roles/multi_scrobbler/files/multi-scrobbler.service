@@ -1,0 +1,13 @@
+[Unit]
+Description=Multi-scrobbler Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/multi-scrobbler
+ExecStart=/root/start-multi-scrobbler.sh
+
+[Install]
+WantedBy=default.target

@@ -179,6 +179,11 @@ variable "donetick_lxcid" {
   default = 512
 }
 
+variable "multi-scrobbler_lxcid" {
+  type    = number
+  default = 513
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -272,6 +277,11 @@ variable "donetick_mac" {
 variable "lidarr_mac" {
   type    = string
   default = "82:f7:81:55:ff:f5"
+}
+
+variable "multi-scrobbler_mac" {
+  type    = string
+  default = "ce:a4:d7:3f:89:b8"
 }
 
 variable "pi-hole-primary_ip" {
@@ -378,3 +388,9 @@ variable "lidarr_ip" {
   type    = string
   default = "10.1.7.23/24"
 }
+
+variable "multi-scrobbler_ip" {
+  type    = string
+  default = "10.1.7.24/24"
+}
+

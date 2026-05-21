@@ -1,0 +1,127 @@
+---
+- name: Create Multi-scrobbler group
+  group:
+    name: multi-scrobbler
+    gid: 10000
+    state: present
+
+- name: Create Multi-scrobbler user
+  user:
+    name: multi-scrobbler
+    uid: 1000
+    groups: multi-scrobbler
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Create Multi-scrobbler directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/multi-scrobbler
+    - /root/.nvm
+    - /root/.cache/node
+
+- name: Add Multi-scrobbler directory as safe in git config
+  shell: >
+    git config --global --add safe.directory /opt/multi-scrobbler
+
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
+
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
+  changed_when: false
+
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install 24.14.0
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Download Multi-scrobbler
+  git:
+    repo: https://github.com/FoxxMD/multi-scrobbler.git
+    dest: /opt/multi-scrobbler
+    depth: 1
+    force: true
+    version: 0.13.3
+  notify:
+    - Start Multi-scrobbler
+
+- name: Install Multi-scrobbler
+  shell: >
+    source /root/nvm.env &&
+    npm install
+  args:
+    executable: /bin/bash
+    chdir: /opt/multi-scrobbler
+  environment:
+    CYPRESS_INSTALL_BINARY: '0'
+    HUSKY: '0' 
+  changed_when: false
+
+- name: Build Multi-scrobbler 
+  shell: >
+    source /root/nvm.env &&
+    npm run docs:install &&
+    npm run build
+  args:
+    executable: /bin/bash
+    chdir: /opt/multi-scrobbler
+  environment:
+    GENERATE_SOURCEMAP: 'false'
+  changed_when: false
+
+- name: Clear build cache
+  shell: >
+    source /root/nvm.env &&
+    npm prune
+  args:
+    executable: /bin/bash
+    chdir: /opt/multi-scrobbler
+  changed_when: false
+
+- name: Symlink config file
+  file:
+    src: /Multiscrobbler-data/config.json
+    dest: /opt/multi-scrobbler/config/config.json
+    state: link
+
+- name: Copy Multi-scrobbler start shell script
+  copy:
+    src: start-multi-scrobbler.sh
+    dest: /root/start-multi-scrobbler.sh
+    mode: +x
+
+- name: Copy Multi-scrobbler systemd service file
+  copy:
+    src: multi-scrobbler.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Multi-scrobbler

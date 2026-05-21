@@ -22,6 +22,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_syncthing_lxcid: ${var.syncthing_lxcid}
     tf_cookcli_lxcid: ${var.cookcli_lxcid}
     tf_donetick_lxcid: ${var.donetick_lxcid}
+    tf_multi_scrobbler_lxcid: ${var.multi-scrobbler_lxcid}
 
     # IPs
     tf_bazarr_ip: ${trimsuffix(var.bazarr_ip, "/24")}
@@ -44,6 +45,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_syncthing_ip: ${trimsuffix(var.syncthing_ip, "/24")}
     tf_cookcli_ip: ${trimsuffix(var.cookcli_ip, "/24")}
     tf_donetick_ip: ${trimsuffix(var.donetick_ip, "/24")}
+    tf_multi_scrobbler_ip: ${trimsuffix(var.multi-scrobbler_ip, "/24")}
 
     # Passwords
     tf_cockpit_password: ${data.vault_kv_secret_v2.cockpit-pwd.data["password"]}
