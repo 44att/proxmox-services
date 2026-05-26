@@ -22,13 +22,17 @@
       - mediainfo
       - sqlite3
       - libchromaprint-tools
+      - ffmpeg
     state: latest
 
-- name: Create Lidarr directory if it does not exist
+- name: Create Lidarr directories if they don't exist
   file:
-    path: /var/lib/lidarr
+    path: "{{ item }}"
     state: directory
     mode: 0755
+  loop:
+    - /var/lib/lidarr
+    - /opt/scripts
 
 - name: Install Lidarr
   unarchive:
@@ -51,7 +55,16 @@
     group: lidarr
   loop:
     - /opt/Lidarr
+    - /opt/scripts
     - /var/lib/lidarr
+
+- name: Copy convert ALAC shell script
+  copy:
+    src: convert-flac-to-alac.sh
+    dest: /opt/scripts/convert-flac-to-alac.sh
+    owner: lidarr
+    group: lidarr
+    mode: +x
 
 - name: Copy systemd service file to server
   copy:
