@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-vaultwarden-http:
+      rule: "Host(`vault.{{ external_domain }}`)"
+      service: vaultwarden
+      middlewares:
+        - https-redirect
+
+    to-vaultwarden:
+      rule: "Host(`vault.{{ external_domain }}`)"
+      service: vaultwarden
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    vaultwarden:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_vaultwarden_ip }}:8000

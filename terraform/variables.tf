@@ -184,6 +184,11 @@ variable "multi-scrobbler_lxcid" {
   default = 513
 }
 
+variable "vaultwarden_lxcid" {
+  type    = number
+  default = 514
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -282,6 +287,11 @@ variable "lidarr_mac" {
 variable "multi-scrobbler_mac" {
   type    = string
   default = "ce:a4:d7:3f:89:b8"
+}
+
+variable "vaultwarden_mac" {
+  type    = string
+  default = "52:14:ab:24:c9:e5"
 }
 
 variable "pi-hole-primary_ip" {
@@ -394,3 +404,7 @@ variable "multi-scrobbler_ip" {
   default = "10.1.7.24/24"
 }
 
+variable "vaultwarden_ip" {
+  type    = string
+  default = "10.1.7.25/24"
+}

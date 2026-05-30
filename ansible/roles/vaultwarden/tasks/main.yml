@@ -1,0 +1,176 @@
+---
+- name: Create Vaultwarden group
+  group:
+    name: vaultwarden
+    gid: 10000
+    state: present
+
+- name: Create Vaultwarden user
+  user:
+    name: vaultwarden
+    uid: 1000
+    groups: vaultwarden
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - libmariadb3
+      - libpq5
+      - sqlite3
+    state: latest
+
+- name: Create Vaultwarden directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /tmp/vw-image
+    - /tmp/vaultwarden-backups
+    - /opt/vaultwarden
+    - /var/lib/vaultwarden/data
+
+- name: Create log file if it doesn't exist
+  file:
+    path: /var/log/vaultwarden.log
+    state: touch
+    owner: vaultwarden
+    group: vaultwarden
+
+- name: Install docker image extract
+  get_url:
+    url: https://raw.githubusercontent.com/jjlin/docker-image-extract/main/docker-image-extract
+    dest: /tmp/vw-image/docker-image-extract
+    mode: +x
+
+- name: Extract the Vaultwarden docker image
+  shell: >
+    ./docker-image-extract vaultwarden/server:latest
+  args:
+    executable: /bin/bash
+    chdir: /tmp/vw-image
+
+- name: Copy Vaultwarden to final directories
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+  loop:
+    - { src: /tmp/vw-image/output/vaultwarden, dest: /opt/vaultwarden }
+    - { src: /tmp/vw-image/output/web-vault, dest: /var/lib/vaultwarden }
+  notify:
+    - Start Vaultwarden
+
+- name: Remove old directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/vw-image/output
+    - /tmp/vw-image/docker-image-extract
+
+- name: Recursively change ownership of Vaultwarden directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: vaultwarden
+    group: vaultwarden
+  loop:
+    - /opt/vaultwarden
+    - /var/lib/vaultwarden
+
+- name: Ensure Vaultwarden is executable
+  file:
+    dest: /opt/vaultwarden/vaultwarden
+    mode: +x
+
+- name: Symlink env file
+  file:
+    src: /Vaultwarden-data/.env
+    dest: /var/lib/vaultwarden/.env
+    state: link
+
+- name: Copy backup script to server
+  copy:
+    src: backup-vaultwarden.sh
+    dest: /root/backup-vaultwarden.sh
+    mode: +x
+
+- name: Copy systemd service file to server
+  copy:
+    src: vaultwarden.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Vaultwarden
+
+- name: Get the database backups
+  find:
+    paths: "/Vaultwarden-data/backups"
+    patterns: '*.sqlite3'
+  register: database_backups
+
+- name: Get the attachment backups
+  find:
+    paths: "/Vaultwarden-data/backups"
+    patterns: 'attachments-*'
+    file_type: directory
+  register: attachment_backups
+
+- name: Get latest database backup
+  set_fact:
+    latest_db_backup: "{{ database_backups.files | sort(attribute='mtime',reverse=true) | first }}"
+  when: database_backups.files | default('', true) | trim != ''
+
+- name: Get latest attachments backup
+  set_fact:
+    latest_attachment_backup: "{{ attachment_backups.files | sort(attribute='mtime',reverse=true) | first }}"
+  when: attachment_backups.files | default('', true) | trim != ''
+
+- name: Stop Vaultwarden service if running
+  systemd:
+    name: vaultwarden
+    state: stopped
+  when: latest_db_backup is defined or latest_attachment_backup is defined
+
+- name: Copy the latest database backup
+  copy:
+    src: "{{ latest_db_backup.path }}"
+    dest: /var/lib/vaultwarden/data/db.sqlite3
+    remote_src: true
+    force: true
+    owner: vaultwarden
+    group: vaultwarden
+  when: latest_db_backup is defined
+  notify:
+    - Start Vaultwarden
+
+- name: Copy the latest attachment backup 
+  copy:
+    src: "{{ latest_attachment_backup.path }}"
+    dest: /var/lib/vaultwarden/data/attachments
+    remote_src: true
+    force: true
+    owner: vaultwarden
+    group: vaultwarden
+  when: latest_attachment_backup is defined
+  notify:
+    - Start Vaultwarden
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup vaultwarden"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup vaultwarden"
+    minute: 0
+    hour: 2
+    job: "/root/backup-vaultwarden.sh"
