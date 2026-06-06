@@ -189,6 +189,11 @@ variable "vaultwarden_lxcid" {
   default = 514
 }
 
+variable "starbase80_lxcid" {
+  type    = number
+  default = 515
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -292,6 +297,11 @@ variable "multi-scrobbler_mac" {
 variable "vaultwarden_mac" {
   type    = string
   default = "52:14:ab:24:c9:e5"
+}
+
+variable "starbase80_mac" {
+  type    = string
+  default = "ae:83:36:69:4c:15"
 }
 
 variable "pi-hole-primary_ip" {
@@ -407,4 +417,9 @@ variable "multi-scrobbler_ip" {
 variable "vaultwarden_ip" {
   type    = string
   default = "10.1.7.25/24"
+}
+
+variable "starbase80_ip" {
+  type    = string
+  default = "10.1.7.26/24"
 }

@@ -1,0 +1,31 @@
+[Unit]
+Description=Starbase80 Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=TITLE=Dashboard
+Environment=LOGO="/logo.png"
+Environment=HEADER=true
+Environment=HEADERLINE=true
+Environment=HEADERTOP=false
+Environment=CATEGORIES=normal
+Environment=BGCOLOR="rgba(248, 250, 252, 0.8)"
+Environment=BGCOLORDARK="rgba(3, 7, 18, 0.8)"
+Environment=BGIMAGE="url('https://images.pexels.com/photos/1054218/pexels-photo-1054218.jpeg')"
+Environment=CATEGORYBUBBLECOLORLIGHT="rgba(255, 255, 255, 0.6)"
+Environment=CATEGORYBUBBLECOLORDARK="rgba(0, 0, 0, 0.6)"
+Environment=THEME=dark
+Environment=NEWWINDOW=true
+Environment=HOVER=none
+Environment=SHOWAUTHWIDGET=false
+Environment=AUTHENTIKURL="auth.example.com"
+Environment=PWA=true
+Environment=PWA_THEME="#003478"
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/starbase80/starbase-81-src
+ExecStart=/root/start-starbase80.sh
+
+[Install]
+WantedBy=default.target

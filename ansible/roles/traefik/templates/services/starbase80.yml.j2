@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-mafl-http:
+    to-starbase80-http:
       rule: "Host(`dashboard.{{ external_domain }}`)"
-      service: mafl
+      service: starbase80
       middlewares:
         - https-redirect
 
-    to-mafl:
+    to-starbase80:
       rule: "Host(`dashboard.{{ external_domain }}`)"
-      service: mafl
+      service: starbase80
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,7 +18,7 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    mafl:
+    starbase80:
       loadBalancer:
         servers:
-          - url: http://{{ tf_mafl_ip }}:3000
+          - url: http://{{ tf_starbase80_ip }}:8080

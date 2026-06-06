@@ -1,0 +1,6 @@
+---
+- name: Start Starbase80
+  systemd:
+    name: starbase80
+    state: restarted
+    daemon_reload: true

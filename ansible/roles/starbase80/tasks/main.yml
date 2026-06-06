@@ -1,0 +1,111 @@
+---
+- name: Create Starbase80 group
+  group:
+    name: starbase80
+    gid: 10000
+    state: present
+
+- name: Create Starbase80 user
+  user:
+    name: starbase80
+    uid: 1000
+    groups: starbase80
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - curl
+    state: latest
+
+- name: Create Starbase80 directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/starbase80
+    - /root/.nvm
+    - /root/.cache/node
+
+- name: Add Starbase80 directory as safe in git config
+  shell: >
+    git config --global --add safe.directory /opt/starbase80
+
+- name: Set nvm environment
+  copy:
+    src: nvm.env
+    dest: nvm.env
+    mode: 0644
+
+- name: Install nvm
+  shell: >
+    set -o pipefail &&
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: /root/.nvm/nvm.sh
+    chdir: /root/.nvm
+  environment:
+    NVM_DIR: /root/.nvm
+  changed_when: false
+
+- name: Install nodejs
+  shell: >
+    source /root/nvm.env &&
+    nvm install --lts
+  args:
+    executable: /bin/bash
+    chdir: /root/.nvm
+  changed_when: false
+
+- name: Download Starbase80
+  git:
+    repo: https://github.com/suckharder/starbase-81
+    dest: /opt/starbase80
+    depth: 1
+    force: true
+    version: main
+  notify:
+    - Start Starbase80
+
+- name: Symlink config file
+  file:
+    src: /Starbase80-data/config.json
+    dest: /opt/starbase80/starbase-81-src/src/config/config.json
+    state: link
+    force: true
+  notify:
+    - Start Starbase80
+
+- name: Install Starbase80
+  shell: >
+    source /root/nvm.env &&
+    npm install
+  args:
+    executable: /bin/bash
+    chdir: /opt/starbase80/starbase-81-src
+  environment:
+    CYPRESS_INSTALL_BINARY: '0'
+    HUSKY: '0' 
+  changed_when: false
+
+- name: Copy Starbase80 start shell script
+  copy:
+    src: start-starbase80.sh
+    dest: /root/start-starbase80.sh
+    mode: +x
+  notify:
+    - Start Starbase80
+
+- name: Copy Starbase80 systemd service file
+  copy:
+    src: starbase80.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start Starbase80

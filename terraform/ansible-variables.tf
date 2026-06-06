@@ -24,6 +24,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_donetick_lxcid: ${var.donetick_lxcid}
     tf_multi_scrobbler_lxcid: ${var.multi-scrobbler_lxcid}
     tf_vaultwarden_lxcid: ${var.vaultwarden_lxcid}
+    tf_starbase80_lxcid: ${var.starbase80_lxcid}
 
     # IPs
     tf_bazarr_ip: ${trimsuffix(var.bazarr_ip, "/24")}
@@ -48,6 +49,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_donetick_ip: ${trimsuffix(var.donetick_ip, "/24")}
     tf_multi_scrobbler_ip: ${trimsuffix(var.multi-scrobbler_ip, "/24")}
     tf_vaultwarden_ip: ${trimsuffix(var.vaultwarden_ip, "/24")}
+    tf_starbase80_ip: ${trimsuffix(var.starbase80_ip, "/24")}
 
     # Passwords
     tf_cockpit_password: ${data.vault_kv_secret_v2.cockpit-pwd.data["password"]}
