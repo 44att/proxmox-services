@@ -89,11 +89,6 @@ variable "cockpit_lxcid" {
   default = 200
 }
 
-variable "mafl_lxcid" {
-  type    = number
-  default = 400
-}
-
 variable "network_lxcid" {
   type    = number
   default = 500
@@ -259,11 +254,6 @@ variable "plex_mac" {
   default = "3A:8F:F6:96:dC:84"
 }
 
-variable "mafl_mac" {
-  type    = string
-  default = "e6:74:a0:6c:31:13"
-}
-
 variable "tailscale_mac" {
   type    = string
   default = "32:a1:07:95:ce:81"
@@ -382,11 +372,6 @@ variable "openwrt_ip" {
 variable "tailscale_ip" {
   type    = string
   default = "10.1.7.96/24"
-}
-
-variable "mafl_ip" {
-  type    = string
-  default = "10.1.7.19/24"
 }
 
 variable "syncthing_ip" {

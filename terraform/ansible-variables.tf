@@ -18,7 +18,6 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_wireguard_lxcid: ${var.wireguard_lxcid}
     tf_tailscale_lxcid: ${var.tailscale_lxcid}
     tf_seerr_lxcid: ${var.seerr_lxcid}
-    tf_mafl_lxcid: ${var.mafl_lxcid}
     tf_syncthing_lxcid: ${var.syncthing_lxcid}
     tf_cookcli_lxcid: ${var.cookcli_lxcid}
     tf_donetick_lxcid: ${var.donetick_lxcid}
@@ -43,7 +42,6 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_recyclarr_ip: ${trimsuffix(var.recyclarr_ip, "/24")}
     tf_tailscale_ip: ${trimsuffix(var.tailscale_ip, "/24")}
     tf_seerr_ip: ${trimsuffix(var.seerr_ip, "/24")}
-    tf_mafl_ip: ${trimsuffix(var.mafl_ip, "/24")}
     tf_syncthing_ip: ${trimsuffix(var.syncthing_ip, "/24")}
     tf_cookcli_ip: ${trimsuffix(var.cookcli_ip, "/24")}
     tf_donetick_ip: ${trimsuffix(var.donetick_ip, "/24")}

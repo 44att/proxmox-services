@@ -14,6 +14,7 @@
 - import_playbook: ./playbooks/samba.yml
 - import_playbook: ./playbooks/seerr.yml
 - import_playbook: ./playbooks/sonarr.yml
+- import_playbook: ./playbooks/starbase80.yml
 - import_playbook: ./playbooks/syncthing.yml
 - import_playbook: ./playbooks/tailscale.yml
 - import_playbook: ./playbooks/traefik.yml
