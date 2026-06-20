@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-immich-http:
+      rule: "Host(`photos.{{ external_domain }}`)"
+      service: immich
+      middlewares:
+        - https-redirect
+
+    to-immich:
+      rule: "Host(`photos.{{ external_domain }}`)"
+      service: immich
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    immich:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_immich_ip }}:2283

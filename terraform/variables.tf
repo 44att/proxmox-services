@@ -164,6 +164,11 @@ variable "syncthing_lxcid" {
   default = 201
 }
 
+variable "immich_lxcid" {
+  type    = number
+  default = 202
+}
+
 variable "cookcli_lxcid" {
   type    = number
   default = 511
@@ -262,6 +267,11 @@ variable "tailscale_mac" {
 variable "syncthing_mac" {
   type    = string
   default = "4a:d2:cc:4f:e6:b4"
+}
+
+variable "immich_mac" {
+  type    = string
+  default = "ee:95:fc:3b:ce:f5"
 }
 
 variable "cookcli_mac" {
@@ -372,6 +382,11 @@ variable "openwrt_ip" {
 variable "tailscale_ip" {
   type    = string
   default = "10.1.7.96/24"
+}
+
+variable "immich_ip" {
+  type    = string
+  default = "10.1.7.19/24"
 }
 
 variable "syncthing_ip" {

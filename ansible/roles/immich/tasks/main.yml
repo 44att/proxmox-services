@@ -1,0 +1,112 @@
+---
+- name: Create Immich group
+  group:
+    name: immich
+    gid: 10000
+    state: present
+
+- name: Create Immich user
+  user:
+    name: immich
+    uid: 1000
+    groups: immich
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - ca-certificates
+      - curl
+      - gnupg2
+    state: latest
+
+- name: Download and dearmor NVIDIA GPG key
+  shell: |
+    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
+    gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+- name: Download and rewrite NVIDIA repo list with signed-by
+  shell: |
+    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' > /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  args:
+    creates: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: Update apt and install docker-ce
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - nvidia-container-toolkit
+    state: latest
+    update_cache: true
+
+- name: Set NVIDIA container runtime setting for Proxmox LXC
+  lineinfile:
+    path: /etc/nvidia-container-runtime/config.toml
+    regexp: "#no-cgroups = false"
+    line: no-cgroups = true
+  notify: Restart Docker
+
+- name: Configure NVIDIA runtime for Docker
+  command: nvidia-ctk runtime configure --runtime=docker
+  args:
+    creates: /etc/docker/daemon.json
+  notify: Restart Docker
+
+- name: Download Immich .env file
+  get_url:
+    url: https://github.com/immich-app/immich/releases/latest/download/example.env
+    dest: /mnt/app_config/immich/.env
+    force: true
+    mode: 0644
+
+- name: Change upload location
+  lineinfile:
+    path: /mnt/app_config/immich/.env
+    regexp: "UPLOAD_LOCATION=./library"
+    line: UPLOAD_LOCATION=/opt/immich/data
+
+- name: Change database data location
+  lineinfile:
+    path: /mnt/app_config/immich/.env
+    regexp: "DB_DATA_LOCATION=./postgres"
+    line: DB_DATA_LOCATION=/opt/immich/postgres
+
+- name: Change timezone
+  lineinfile:
+    path: /mnt/app_config/immich/.env
+    regexp: "# TZ=Etc/UTC"
+    line: TZ=Europe/London
+
+- name: Set config file location
+  lineinfile:
+    path: /mnt/app_config/immich/.env
+    line: "{{ item }}"
+    state: present
+  loop:
+    - "# The location of the config file"
+    - IMMICH_CONFIG_FILE=/data/immich.json
+
+- name: Start immich docker compose
+  community.docker.docker_compose_v2:
+    project_src: /mnt/app_config/immich
+    pull: "always"
