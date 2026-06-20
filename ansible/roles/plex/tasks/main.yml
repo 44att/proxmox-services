@@ -42,7 +42,7 @@
 
 - name: Synchronize Plex config from backup source
   synchronize:
-    src: "/Plex-data/"
+    src: "/mnt/app_config/plex/"
     dest: "/var/lib/plexmediaserver"
     rsync_opts:
       - "--exclude=Cache/"
@@ -77,4 +77,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog --exclude=Cache/ /var/lib/plexmediaserver/ /Plex-data"
+    job: "rsync -qauzog --exclude=Cache/ /var/lib/plexmediaserver/ /mnt/app_config/plex"

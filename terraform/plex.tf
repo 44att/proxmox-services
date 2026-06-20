@@ -34,20 +34,17 @@ resource "proxmox_lxc" "plex" {
       host     = var.pve2_address
     }
     inline = [
-      "grep -qxF 'lxc.cgroup2.devices.allow: c 195:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 195:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.cgroup2.devices.allow: c 234:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 234:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.cgroup2.devices.allow: c 237:* rwm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.cgroup2.devices.allow: c 237:* rwm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
-      "grep -qxF 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev0: /dev/nvidia0' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev0: /dev/nvidia0' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev1: /dev/nvidiactl' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev1: /dev/nvidiactl' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev2: /dev/nvidia-uvm' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev2: /dev/nvidia-uvm' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev3: /dev/nvidia-uvm-tools' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev3: /dev/nvidia-uvm-tools' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev4: /dev/nvidia-caps/nvidia-cap1' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev4: /dev/nvidia-caps/nvidia-cap1' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
+      "grep -qxF 'dev5: /dev/nvidia-caps/nvidia-cap2' /etc/pve/lxc/${var.plex_lxcid}.conf || echo 'dev5: /dev/nvidia-caps/nvidia-cap2' >> /etc/pve/lxc/${var.plex_lxcid}.conf",
       "rm -f ~/.nvidia-driver-version",
       "echo '${var.nvidia_driver_version}' >> ~/.nvidia-driver-version",
       "pct push ${var.plex_lxcid} ~/.nvidia-driver-version /root/.nvidia-driver-version",
       "pct set ${var.plex_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media",
-      "pct set ${var.plex_lxcid} -mp1 /mnt/pve/app_config/plex,mp=/Plex-data",
+      "pct set ${var.plex_lxcid} -mp1 /mnt/pve/app_config/plex,mp=/mnt/app_config/plex",
       "pct reboot ${var.plex_lxcid}",
     ]
   }
