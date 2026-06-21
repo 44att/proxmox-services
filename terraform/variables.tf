@@ -194,6 +194,11 @@ variable "starbase80_lxcid" {
   default = 515
 }
 
+variable "slskd_lxcid" {
+  type    = number
+  default = 516
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -302,6 +307,11 @@ variable "vaultwarden_mac" {
 variable "starbase80_mac" {
   type    = string
   default = "ae:83:36:69:4c:15"
+}
+
+variable "slskd_mac" {
+  type    = string
+  default = "c6:b7:2c:bd:5c:14"
 }
 
 variable "pi-hole-primary_ip" {
@@ -422,4 +432,9 @@ variable "vaultwarden_ip" {
 variable "starbase80_ip" {
   type    = string
   default = "10.1.7.26/24"
+}
+
+variable "slskd_ip" {
+  type    = string
+  default = "10.1.7.27/24"
 }

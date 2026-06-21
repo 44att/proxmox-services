@@ -1,0 +1,6 @@
+---
+- name: Start slskd
+  systemd:
+    name: slskd
+    state: restarted
+    daemon_reload: true

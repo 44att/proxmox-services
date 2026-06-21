@@ -1,0 +1,13 @@
+[Unit]
+Description=slskd Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=exec
+Restart=on-failure
+WorkingDirectory=/opt/slskd
+ExecStart=/opt/slskd/slskd --app-dir=/var/lib/slskd
+
+[Install]
+WantedBy=default.target

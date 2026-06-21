@@ -1,0 +1,71 @@
+---
+- name: Create slskd group
+  group:
+    name: slskd
+    gid: 10000
+    state: present
+
+- name: Create slskd user
+  user:
+    name: slskd
+    uid: 1000
+    groups: slskd
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - unrar
+      - unzip
+    state: latest
+
+- name: Create slskd directory if it doesn't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/slskd
+    - /var/lib/slskd
+
+- name: Install slskd
+  unarchive:
+    src: https://github.com/slskd/slskd/releases/download/0.25.1/slskd-0.25.1-linux-x64.zip
+    dest: /opt/slskd
+    remote_src: true
+  notify:
+    - Start slskd
+
+- name: Recursively change ownership of slskd directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: slskd
+    group: slskd
+  loop:
+    - /opt/slskd
+    - /var/lib/slskd
+
+- name: Ensure slskd is executable
+  file:
+    dest: /opt/slskd/slskd
+    mode: +x
+
+- name: Symlink config file
+  file:
+    src: /mnt/app_config/slskd/slskd.yml
+    dest: /var/lib/slskd/slskd.yml
+    state: link
+
+- name: Copy systemd service file to server
+  copy:
+    src: slskd.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start slskd

@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-slskd-http:
+      rule: "Host(`slskd.{{ external_domain }}`)"
+      service: slskd
+      middlewares:
+        - https-redirect
+
+    to-slskd:
+      rule: "Host(`slskd.{{ external_domain }}`)"
+      service: slskd
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    slskd:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_slskd_ip }}:5030
