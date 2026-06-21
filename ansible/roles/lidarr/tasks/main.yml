@@ -33,16 +33,17 @@
   loop:
     - /var/lib/lidarr
     - /opt/scripts
+    - /tmp/cache
 
 - name: Install Lidarr
   unarchive:
-    src: https://github.com/Lidarr/Lidarr/releases/download/v3.1.0.4875/Lidarr.master.3.1.0.4875.linux-core-x64.tar.gz
+    src: http://lidarr.servarr.com/v1/update/nightly/updatefile?os=linux&runtime=netcore&arch=x64
     dest: /opt/
     remote_src: true
 
 - name: Synchronize Lidarr config from backup source
   synchronize:
-    src: "/Lidarr-data/"
+    src: "/mnt/app_config/lidarr/"
     dest: "/var/lib/lidarr/"
   delegate_to: "{{ inventory_hostname }}"
 
@@ -57,6 +58,7 @@
     - /opt/Lidarr
     - /opt/scripts
     - /var/lib/lidarr
+    - /tmp/cache
 
 - name: Copy convert ALAC shell script
   copy:
@@ -86,4 +88,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /var/lib/lidarr/ /Lidarr-data"
+    job: "rsync -qauzog /var/lib/lidarr/ /mnt/app_config/lidarr"

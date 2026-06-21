@@ -34,7 +34,7 @@ resource "proxmox_lxc" "lidarr" {
     }
     inline = [
       "pct set ${var.lidarr_lxcid} -mp0 /mnt/pve/media_root,mp=/mnt/media_root",
-      "pct set ${var.lidarr_lxcid} -mp1 /mnt/pve/app_config/lidarr,mp=/Lidarr-data",
+      "pct set ${var.lidarr_lxcid} -mp1 /mnt/pve/app_config/lidarr,mp=/mnt/app_config/lidarr",
       "pct reboot ${var.lidarr_lxcid}",
     ]
   }
