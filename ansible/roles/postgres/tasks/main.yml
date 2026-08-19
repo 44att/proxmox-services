@@ -1,0 +1,339 @@
+---
+- name: Create Postgres group
+  group:
+    name: postgres
+    gid: 10000
+    state: present
+
+- name: Create Postgres user
+  user:
+    name: postgres
+    uid: 1000
+    groups: postgres
+    shell: /bin/zsh
+    append: true
+    state: present
+    create_home: true
+
+- name: Install packages
+  apt:
+    pkg:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: latest
+  notify:
+    - Start Postgres
+
+- name: Copy .oh-my-zsh from root user
+  copy:
+    src: /root/.oh-my-zsh/
+    dest: /home/postgres/.oh-my-zsh/
+    owner: postgres
+    group: postgres
+    remote_src: true
+
+- name: Set correct permissions for oh-my-zsh files
+  file:
+    path: /home/postgres/.oh-my-zsh/
+    owner: postgres
+    group: postgres
+    mode: u=rwX,g=rX,o=rX
+    recurse: true
+
+- name: Create .zshrc file
+  copy:
+    src: /root/.zshrc
+    dest: /home/postgres/.zshrc
+    owner: postgres
+    group: postgres
+    mode: 0644
+    remote_src: true
+
+- name: Replace root with postgres in .zshrc
+  lineinfile:
+    path: /home/postgres/.zshrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: export DEFAULT_USER="root", line: export DEFAULT_USER="postgres" }
+    - { regexp: export ZSH=/root/.oh-my-zsh, line: export ZSH=/home/postgres/.oh-my-zsh }
+
+- name: Set password for default postgres user 
+  community.postgresql.postgresql_user:
+    name: postgres
+    password: "{{ tf_postgres_database_password }}"
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  become: true
+  become_user: postgres
+
+- name: Create users
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  become: true
+  become_user: postgres
+  loop: 
+    - { name: lidarr, password: "{{ tf_lidarr_database_password }}" }
+    - { name: radarr, password: "{{ tf_radarr_database_password }}" }
+    - { name: sonarr, password: "{{ tf_sonarr_database_password }}" }
+    - { name: prowlarr, password: "{{ tf_prowlarr_database_password }}" }
+    - { name: bazarr, password: "{{ tf_bazarr_database_password }}" }
+    - { name: seerr, password: "{{ tf_seerr_database_password }}" }
+    - { name: donetick, password: "{{ tf_donetick_database_password }}" }
+  notify:
+    - Start Postgres
+
+- name: Create databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    comment: "{{ item.comment }}"
+    encoding: "UTF-8"
+  become: true
+  become_user: postgres
+  loop:
+    - { name: lidarr-main, owner: lidarr, comment: 'Lidarr main database' }
+    - { name: lidarr-log, owner: lidarr, comment: 'Lidarr logs database' }
+    - { name: radarr-main, owner: radarr, comment: 'Radarr main database' }
+    - { name: radarr-log, owner: radarr, comment: 'Radarr logs database' }
+    - { name: sonarr-main, owner: sonarr, comment: 'Sonarr main database' }
+    - { name: sonarr-log, owner: sonarr, comment: 'Sonarr logs database' }
+    - { name: prowlarr-main, owner: prowlarr, comment: 'Prowlarr main database' }
+    - { name: prowlarr-log, owner: prowlarr, comment: 'Prowlarr logs database' }
+    - { name: seerr, owner: seerr, comment: 'Seerr database' }
+    - { name: bazarr, owner: bazarr, comment: 'Bazarr database' }
+    - { name: donetick, owner: donetick, comment: 'Donetick database' }
+  notify:
+    - Start Postgres
+
+- name: Update postgresql.conf file
+  lineinfile:
+    path: /etc/postgresql/18/main/postgresql.conf
+    regexp: "#listen_addresses = 'localhost'"
+    line: listen_addresses = '*'
+  notify:
+    - Start Postgres
+
+- name: Test for lidarr main line in pg_hba.conf
+  shell: grep -c "lidarr-main" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_lidarr_main
+
+- name: Test for lidarr log line in pg_hba.conf
+  shell: grep -c "lidarr-log" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_lidarr_log
+
+- name: Test for radarr main line in pg_hba.conf
+  shell: grep -c "radarr-main" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_radarr_main
+
+- name: Test for radarr log line in pg_hba.conf
+  shell: grep -c "radarr-log" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_radarr_log
+
+- name: Test for sonarr main line in pg_hba.conf
+  shell: grep -c "sonarr-main" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_sonarr_main
+
+- name: Test for sonarr log line in pg_hba.conf
+  shell: grep -c "sonarr-log" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_sonarr_log
+
+- name: Test for prowlarr main line in pg_hba.conf
+  shell: grep -c "prowlarr-main" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_prowlarr_main
+
+- name: Test for prowlarr log line in pg_hba.conf
+  shell: grep -c "prowlarr-log" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_prowlarr_log
+
+- name: Test for bazarr line in pg_hba.conf
+  shell: grep -c "bazarr" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_bazarr
+
+- name: Test for seerr line in pg_hba.conf
+  shell: grep -c "seerr" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_seerr
+
+- name: Test for donetick line in pg_hba.conf
+  shell: grep -c "donetick" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_donetick
+
+- name: Add lidarr main access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  lidarr-main  lidarr  {{ tf_lidarr_ip }}/24  scram-sha-256"
+  when: test_lidarr_main.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add lidarr log access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  lidarr-log  lidarr  {{ tf_lidarr_ip }}/24  scram-sha-256"
+  when: test_lidarr_log.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add radarr main access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  radarr-main  radarr  {{ tf_radarr_ip }}/24  scram-sha-256"
+  when: test_radarr_main.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add radarr log access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  radarr-log  radarr  {{ tf_radarr_ip }}/24  scram-sha-256"
+  when: test_radarr_log.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add sonarr main access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  sonarr-main  sonarr  {{ tf_sonarr_ip }}/24  scram-sha-256"
+  when: test_sonarr_main.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add sonarr log access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  sonarr-log  sonarr  {{ tf_sonarr_ip }}/24  scram-sha-256"
+  when: test_sonarr_log.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add prowlarr main access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  prowlarr-main  prowlarr  {{ tf_prowlarr_ip }}/24  scram-sha-256"
+  when: test_prowlarr_main.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add prowlarr log access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  prowlarr-log  prowlarr  {{ tf_prowlarr_ip }}/24  scram-sha-256"
+  when: test_prowlarr_log.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add bazarr access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  bazarr  bazarr  {{ tf_bazarr_ip }}/24  scram-sha-256"
+  when: test_bazarr.stdout == "0"
+  notify:
+    - Start Postgres
+    
+- name: Add seerr access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  seerr  seerr  {{ tf_seerr_ip }}/24  scram-sha-256"
+  when: test_seerr.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add donetick access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  donetick  donetick  {{ tf_donetick_ip }}/24  scram-sha-256"
+  when: test_donetick.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Create backup cron job for lidarr-main database
+  cron:
+    user: postgres
+    name: backup lidarr-main database
+    minute: "0"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c lidarr-main > /mnt/app_config/postgres/backups/lidarr/lidarr-main-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/lidarr -name "lidarr-main-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for lidarr-log database
+  cron:
+    user: postgres
+    name: backup lidarr-log database
+    minute: "1"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c lidarr-log > /mnt/app_config/postgres/backups/lidarr/lidarr-log-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/lidarr -name "lidarr-log-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for radarr-main database
+  cron:
+    user: postgres
+    name: backup radarr-main database
+    minute: "2"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c radarr-main > /mnt/app_config/postgres/backups/radarr/radarr-main-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/radarr -name "radarr-main-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for radarr-log database
+  cron:
+    user: postgres
+    name: backup radarr-log database
+    minute: "3"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c radarr-log > /mnt/app_config/postgres/backups/radarr/radarr-log-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/radarr -name "radarr-log-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for sonarr-main database
+  cron:
+    user: postgres
+    name: backup sonarr-main database
+    minute: "4"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c sonarr-main > /mnt/app_config/postgres/backups/sonarr/sonarr-main-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/sonarr -name "sonarr-main-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for sonarr-log database
+  cron:
+    user: postgres
+    name: backup sonarr-log database
+    minute: "5"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c sonarr-log > /mnt/app_config/postgres/backups/sonarr/sonarr-log-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/sonarr -name "sonarr-log-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for prowlarr-main database
+  cron:
+    user: postgres
+    name: backup prowlarr-main database
+    minute: "6"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c prowlarr-main > /mnt/app_config/postgres/backups/prowlarr/prowlarr-main-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/prowlarr -name "prowlarr-main-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for prowlarr-log database
+  cron:
+    user: postgres
+    name: backup prowlarr-log database
+    minute: "7"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c prowlarr-log > /mnt/app_config/postgres/backups/prowlarr/prowlarr-log-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/prowlarr -name "prowlarr-log-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for bazarr database
+  cron:
+    user: postgres
+    name: backup bazarr database
+    minute: "8"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c bazarr > /mnt/app_config/postgres/backups/bazarr/bazarr-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/bazarr -name "bazarr-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for seerr database
+  cron:
+    user: postgres
+    name: backup seerr database
+    minute: "9"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c bazarr > /mnt/app_config/postgres/backups/seerr/seerr-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/seerr -name "seerr-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for donetick database
+  cron:
+    user: postgres
+    name: backup donetick database
+    minute: "10"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c donetick > /mnt/app_config/postgres/backups/donetick/donetick-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/donetick -name "donetick-*.dump" -mtime +7 -delete'

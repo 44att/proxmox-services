@@ -1,0 +1,135 @@
+---
+- name: Set authorized key for Lidarr LXC to be able to call beets remotely
+  ansible.posix.authorized_key:
+    user: root
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBno2U1k9z3JWIjX+y5K/in1Fq3EYQqu7p104kuVRu+7 lidarr@{{ tf_lidarr_ip }}"
+    state: present
+
+- name: Create Beets group
+  group:
+    name: beets
+    gid: 10000
+    state: present
+
+- name: Create Beets user
+  user:
+    name: beets
+    uid: 1000
+    groups: beets
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - ffmpeg
+      - sqlite3
+      - libchromaprint-tools
+      - python3-acoustid
+      - python3-gi
+      - python3-discogs-client
+      - python3-pip
+      - python3-pylast
+      - python3-venv
+      - gstreamer1.0-tools
+      - gstreamer1.0-plugins-base
+      - gstreamer1.0-plugins-good
+      - gstreamer1.0-plugins-bad
+      - gstreamer1.0-plugins-ugly
+    state: latest
+
+- name: Ignore PEP 668 because it's silly
+  file:
+    path: /usr/lib/python3.12/EXTERNALLY-MANAGED
+    state: absent
+
+- name: Install Beets
+  pip:
+    name: beets[convert,inline,musicbrainz,deezer,subsonicupdate,plexupdate,info,chroma,fetchart,embedart,mbsync,lyrics]
+    state: present
+    break_system_packages: true
+    
+- name: Create Beets directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /opt/scripts
+    - /var/lib/beets
+    - /var/log/beets
+    - /tmp/beets-backups
+    - /root/.config/beets
+
+- name: Create log files if they don't exist
+  file:
+    path: "{{ item }}"
+    state: touch
+  loop:
+    - /var/log/beets/import.log
+
+- name: Recursively change ownership of Beets directory
+  file:
+    path: /var/lib/beets
+    state: directory
+    recurse: true
+    owner: beets
+    group: beets
+
+- name: Copy backup script to server
+  copy:
+    src: backup-beets.sh
+    dest: /root/backup-beets.sh
+    mode: +x
+
+- name: Symlink config file
+  file:
+    src: /mnt/app_config/beets/config.yaml
+    dest: /root/.config/beets/config.yaml
+    state: link
+
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/beets
+    dest: /etc/logrotate.d/beets
+
+- name: Run logrotate
+  shell: logrotate /etc/logrotate.conf
+
+- name: Create logrotate cron job
+  cron:
+    name: "logrotate"
+    weekday: "*"
+    minute: "*/10"
+    hour: "*"
+    job: "logrotate /etc/logrotate.conf"
+
+- name: Get the database backups
+  find:
+    paths: "/mnt/app_config/beets/backups"
+    patterns: '*.db'
+  register: database_backups
+
+- name: Get latest database backup
+  set_fact:
+    latest_db_backup: "{{ database_backups.files | sort(attribute='mtime',reverse=true) | first }}"
+  when: database_backups.files | default('', true) | trim != ''
+
+- name: Copy the latest database backup
+  copy:
+    src: "{{ latest_db_backup.path }}"
+    dest: /var/lib/beets/library.db
+    remote_src: true
+    force: true
+    owner: beets
+    group: beets
+  when: latest_db_backup is defined
+
+- name: Create backup cron job
+  cron:
+    name: "backup beets"
+    minute: 0
+    hour: 2
+    job: "/root/backup-beets.sh"

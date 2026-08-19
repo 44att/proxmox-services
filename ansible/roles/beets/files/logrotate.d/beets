@@ -1,0 +1,9 @@
+/var/log/beets/*.log {
+  daily
+  rotate 7
+  compress
+  missingok
+  notifempty
+  create 644 beets beets
+  copytruncate
+}

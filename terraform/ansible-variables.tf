@@ -26,6 +26,10 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_starbase80_lxcid: ${var.starbase80_lxcid}
     tf_immich_lxcid: ${var.immich_lxcid}
     tf_slskd_lxcid: ${var.slskd_lxcid}
+    tf_aurral_lxcid: ${var.aurral_lxcid}
+    tf_beets_lxcid: ${var.beets_lxcid}
+    tf_navidrome_lxcid: ${var.navidrome_lxcid}
+    tf_postgres_lxcid: ${var.postgres_lxcid}
 
     # IPs
     tf_bazarr_ip: ${trimsuffix(var.bazarr_ip, "/24")}
@@ -52,9 +56,21 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_starbase80_ip: ${trimsuffix(var.starbase80_ip, "/24")}
     tf_immich_ip: ${trimsuffix(var.immich_ip, "/24")}
     tf_slskd_ip: ${trimsuffix(var.slskd_ip, "/24")}
+    tf_aurral_ip: ${trimsuffix(var.aurral_ip, "/24")}
+    tf_beets_ip: ${trimsuffix(var.beets_ip, "/24")}
+    tf_navidrome_ip: ${trimsuffix(var.navidrome_ip, "/24")}
+    tf_postgres_ip: ${trimsuffix(var.postgres_ip, "/24")}
 
     # Passwords
     tf_cockpit_password: ${data.vault_kv_secret_v2.cockpit-pwd.data["password"]}
+    tf_postgres_database_password: ${data.vault_kv_secret_v2.postgres-db.data["postgres-password"]}
+    tf_lidarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["lidarr-password"]}
+    tf_radarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["radarr-password"]}
+    tf_sonarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["sonarr-password"]}
+    tf_prowlarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["prowlarr-password"]}
+    tf_bazarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["bazarr-password"]}
+    tf_seerr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["seerr-password"]}
+    tf_donetick_database_password: ${data.vault_kv_secret_v2.postgres-db.data["donetick-password"]}
     DOC
   filename = "./tf_ansible_vars.yml"
 }

@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-navidrome-http:
+      rule: "Host(`listen.{{ external_domain }}`)"
+      service: navidrome
+      middlewares:
+        - https-redirect
+
+    to-navidrome:
+      rule: "Host(`listen.{{ external_domain }}`)"
+      service: navidrome
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    navidrome:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_navidrome_ip }}:4533

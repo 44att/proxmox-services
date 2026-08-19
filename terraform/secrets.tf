@@ -9,3 +9,8 @@ data "vault_kv_secret_v2" "proxmox-pwd" {
   mount = "kv"
   name  = "proxmox-services/proxmox-pwd"
 }
+
+data "vault_kv_secret_v2" "postgres-db" {
+  mount = "kv"
+  name  = "proxmox-services/postgres-db"
+}

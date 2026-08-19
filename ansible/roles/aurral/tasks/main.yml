@@ -1,0 +1,87 @@
+---
+- name: Create aurral group
+  group:
+    name: aurral
+    gid: 10000
+    state: present
+
+- name: Create aurral user
+  user:
+    name: aurral
+    uid: 1000
+    groups: aurral
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - ca-certificates
+      - curl
+      - gnupg2
+    state: latest
+
+- name: Create Aurral directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /var/lib/aurral
+
+- name: Synchronize Aurral config from backup source
+  synchronize:
+    src: "/mnt/app_config/aurral/"
+    dest: "/var/lib/aurral/"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Recursively change ownership of Aurral directory
+  file:
+    path: /var/lib/aurral
+    state: directory
+    recurse: true
+    owner: aurral
+    group: aurral
+
+- name: Add Docker Module Repository
+  deb822_repository:
+    name: docker
+    types: [deb]
+    uris: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}"
+    signed_by: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
+    suites: ["{{ ansible_facts['distribution_release'] | lower }}"]
+    components: [stable]
+    state: present
+    enabled: true
+    install_python_debian: true
+
+- name: Update apt and install docker-ce
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+    update_cache: true
+
+- name: Start Aurral docker compose
+  community.docker.docker_compose_v2:
+    project_src: /mnt/app_config/aurral
+    pull: "always"
+
+- name: Remove old cron job if it exists
+  cron:
+    name: "backup aurral"
+    state: absent
+
+- name: Create backup cron job
+  cron:
+    name: "backup aurral"
+    weekday: "*"
+    minute: "*/30"
+    hour: "*"
+    job: "rsync -qauzog --exclude=discover-artwork/ --exclude=image-proxy/ /var/lib/aurral/ /mnt/app_config/aurral"

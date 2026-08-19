@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+    to-aurral-http:
+      rule: "Host(`music-discovery.{{ external_domain }}`)"
+      service: aurral
+      middlewares:
+        - https-redirect
+
+    to-aurral:
+      rule: "Host(`music-discovery.{{ external_domain }}`)"
+      service: aurral
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+
+  services:
+    aurral:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_aurral_ip }}:3001

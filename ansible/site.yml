@@ -1,13 +1,17 @@
 ---
+- import_playbook: ./playbooks/aurral.yml
 - import_playbook: ./playbooks/bazarr.yml
+- import_playbook: ./playbooks/beets.yml
 - import_playbook: ./playbooks/cockpit.yml
 - import_playbook: ./playbooks/donetick.yml
 - import_playbook: ./playbooks/immich.yml
 - import_playbook: ./playbooks/lidarr.yml
 - import_playbook: ./playbooks/multi-scrobbler.yml
+- import_playbook: ./playbooks/navidrome.yml
 - import_playbook: ./playbooks/network.yml
 - import_playbook: ./playbooks/pi-hole.yml
 - import_playbook: ./playbooks/plex.yml
+- import_playbook: ./playbooks/postgres.yml
 - import_playbook: ./playbooks/prowlarr.yml
 - import_playbook: ./playbooks/radarr.yml
 - import_playbook: ./playbooks/recyclarr.yml

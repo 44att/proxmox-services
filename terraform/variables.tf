@@ -72,7 +72,7 @@ variable "vpn_gateway_ip" {
 variable "nvidia_driver_version" {
   description = "Nvidia driver version"
   type        = string
-  default     = "580.119.02"
+  default     = "580.173.02"
 }
 
 //
@@ -82,6 +82,11 @@ variable "nvidia_driver_version" {
 variable "pi-hole_lxcid" {
   type    = number
   default = 100
+}
+
+variable "postgres_lxcid" {
+  type    = number
+  default = 101
 }
 
 variable "cockpit_lxcid" {
@@ -199,6 +204,21 @@ variable "slskd_lxcid" {
   default = 516
 }
 
+variable "aurral_lxcid" {
+  type    = number
+  default = 517
+}
+
+variable "beets_lxcid" {
+  type    = number
+  default = 518
+}
+
+variable "navidrome_lxcid" {
+  type    = number
+  default = 519
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -206,7 +226,7 @@ variable "traefik_mac" {
 
 variable "bazarr_mac" {
   type    = string
-  default = "EA:E4:60:8F:7F:B7"
+  default = "b2:f8:b9:87:5a:c5"
 }
 
 variable "seerr_mac" {
@@ -242,6 +262,11 @@ variable "pi-hole-primary_mac" {
 variable "pi-hole-secondary_mac" {
   type    = string
   default = "02:58:BD:D4:C1:FC"
+}
+
+variable "postgres_mac" {
+  type    = string
+  default = "82:d9:c3:e3:45:6a"
 }
 
 variable "prowlarr_mac" {
@@ -314,6 +339,21 @@ variable "slskd_mac" {
   default = "c6:b7:2c:bd:5c:14"
 }
 
+variable "aurral_mac" {
+  type    = string
+  default = "3e:26:4b:a3:f4:8f"
+}
+
+variable "beets_mac" {
+  type    = string
+  default = "8e:17:da:f0:7e:8e"
+}
+
+variable "navidrome_mac" {
+  type    = string
+  default = "3e:e5:58:bd:56:1b"
+}
+
 variable "pi-hole-primary_ip" {
   type    = string
   default = "10.1.7.98/24"
@@ -322,6 +362,11 @@ variable "pi-hole-primary_ip" {
 variable "pi-hole-secondary_ip" {
   type    = string
   default = "10.1.7.99/24"
+}
+
+variable "postgres_ip" {
+  type    = string
+  default = "10.1.7.95/24"
 }
 
 variable "traefik_ip" {
@@ -437,4 +482,19 @@ variable "starbase80_ip" {
 variable "slskd_ip" {
   type    = string
   default = "10.1.7.27/24"
+}
+
+variable "aurral_ip" {
+  type    = string
+  default = "10.1.7.28/24"
+}
+
+variable "beets_ip" {
+  type    = string
+  default = "10.1.7.29/24"
+}
+
+variable "navidrome_ip" {
+  type    = string
+  default = "10.1.7.30/24"
 }
