@@ -1,10 +1,7 @@
 ###################################################################################################
-# Recyclarr Configuration Template: UHD Bluray + WEB                                              #
-# Updated: 2025-09-07                                                                             #
+# Recyclarr Configuration: UHD Bluray + WEB                                                       #
+# Updated for Recyclarr v8.0+                                                                     #
 # Documentation: https://recyclarr.dev                                                            #
-# Note: If you are using multiple profiles in a single instance, please read the following        #
-# documentation about file merging:                                                               #
-# https://recyclarr.dev/reference/config-examples/#merge-single-instance                          #
 ###################################################################################################
 
 # Instance Definition: https://recyclarr.dev/reference/configuration/basic/
@@ -13,11 +10,13 @@ radarr:
     base_url: !secret radarr_url
     api_key: !secret radarr_api_key
 
-    include:
-      # Comment out any of the following includes to disable them
-      - template: radarr-quality-definition-movie
-      - template: radarr-quality-profile-uhd-bluray-web
-      - template: radarr-custom-formats-uhd-bluray-web
+    # Replaces 'radarr-quality-definition-movie' template
+    quality_definition:
+      type: movie
+
+    # Replaces 'radarr-quality-profile-uhd-bluray-web' template
+    quality_profiles:
+      - trash_id: 25eb16fb90bc66f5713c7a23c3132e4d # UHD Bluray + WEB
 
 # Custom Formats: https://recyclarr.dev/reference/configuration/custom-formats/
     custom_formats:

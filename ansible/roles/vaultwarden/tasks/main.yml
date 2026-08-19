@@ -91,7 +91,7 @@
 
 - name: Symlink env file
   file:
-    src: /Vaultwarden-data/.env
+    src: /mnt/app_config/vaultwarden/.env
     dest: /var/lib/vaultwarden/.env
     state: link
 
@@ -112,13 +112,13 @@
 
 - name: Get the database backups
   find:
-    paths: "/Vaultwarden-data/backups"
+    paths: "/mnt/app_config/vaultwarden/backups"
     patterns: '*.sqlite3'
   register: database_backups
 
 - name: Get the attachment backups
   find:
-    paths: "/Vaultwarden-data/backups"
+    paths: "/mnt/app_config/vaultwarden/backups"
     patterns: 'attachments-*'
     file_type: directory
   register: attachment_backups

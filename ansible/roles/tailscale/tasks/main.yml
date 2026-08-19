@@ -48,3 +48,13 @@
   shell: >
     curl -fsSL https://tailscale.com/install.sh | sh &&
     tailscale up --auth-key={{ tailscale_auth_key }} --advertise-routes=10.1.7.0/24 --ssh
+
+- name: Symlink /etc/resolv.conf to systemd-resolved stub
+  file:
+    src: /run/systemd/resolve/stub-resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: true
+  notify:
+    - Restart systemd-resolved
+    - Restart Tailscale

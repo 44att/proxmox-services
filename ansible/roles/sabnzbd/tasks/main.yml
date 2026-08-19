@@ -18,12 +18,12 @@
     state: present
     create_home: false
 
-- name: Install packages
-  apt:
-    pkg:
-      - apt-transport-https
-      - gnupg
-    state: latest
+# - name: Install packages
+#   apt:
+#     pkg:
+#       - apt-transport-https
+#       - gnupg
+#     state: latest
 
 - name: Create Sabnzbd directory if it does not exist
   file:
@@ -32,25 +32,54 @@
     mode: 0755
 
 - name: Add the Universe and Multiverse repositories
-  apt_repository:
-    repo: "{{ item }}"
+  deb822_repository:
+    name: ubuntu
+    types: [deb]
+    uris: http://archive.ubuntu.com/ubuntu/
+    signed_by: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+    suites:
+      - "{{ ansible_facts['distribution_release'] | lower }}"
+      - "{{ ansible_facts['distribution_release'] | lower }}-updates"
+      - "{{ ansible_facts['distribution_release'] | lower }}-security"
+    components:
+      - universe
+      - multiverse
     state: present
-  loop:
-    - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe multiverse"
-    - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe multiverse"
-    - "deb http://security.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-security universe multiverse"
-
-- name: Add the SABnzbd repository Apt signing key
-  apt_key:
-    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x98703123e0f52b2be16d586ef13930b14bb9f05f
-    state: present
-    keyring: /etc/apt/trusted.gpg.d/sabnzbd.gpg
+    enabled: true
+    install_python_debian: true
 
 - name: Add the SABnzbd repository
-  apt_repository:
-    repo: deb [arch=amd64] https://ppa.launchpadcontent.net/jcfp/nobetas/ubuntu {{ ansible_distribution_release }} main
-    filename: sabnzbd
+  deb822_repository:
+    name: sabnzbd
+    types: [deb]
+    uris: https://ppa.launchpadcontent.net/jcfp/nobetas/ubuntu/
+    signed_by: https://ubuntu.com
+    suites: ["{{ ansible_facts['distribution_release'] | lower }}"]
+    components: [main]
     state: present
+    enabled: true
+    install_python_debian: true
+
+# - name: Add the Universe and Multiverse repositories
+#   apt_repository:
+#     repo: "{{ item }}"
+#     state: present
+#   loop:
+#     - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe multiverse"
+#     - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe multiverse"
+#     - "deb http://security.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-security universe multiverse"
+
+# - name: Add the SABnzbd repository Apt signing key
+#   apt_key:
+#     url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x98703123e0f52b2be16d586ef13930b14bb9f05f
+#     state: present
+#     keyring: /etc/apt/trusted.gpg.d/sabnzbd.gpg
+
+# - name: Add the SABnzbd repository
+#   apt_repository:
+#     repo: deb [arch=amd64] https://ppa.launchpadcontent.net/jcfp/nobetas/ubuntu {{ ansible_distribution_release }} main
+#     filename: sabnzbd
+#     state: present
 
 - name: Update repo cache
   changed_when: false
@@ -65,7 +94,7 @@
 
 - name: Synchronize Sabnzbd config from backup source
   synchronize:
-    src: "/Sabnzbd-data/"
+    src: "/mnt/app_config/sabnzbd/"
     dest: "/opt/sabnzbd/data"
   delegate_to: "{{ inventory_hostname }}"
 
@@ -97,4 +126,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /opt/sabnzbd/data/ /Sabnzbd-data"
+    job: "rsync -qauzog /opt/sabnzbd/data/ /mnt/app_config/sabnzbd"

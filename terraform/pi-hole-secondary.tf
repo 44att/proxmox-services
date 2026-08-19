@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "pi-hole-secondary" {
   target_node     = "pve2"
   hostname        = "pi-hole-secondary"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -11,6 +11,10 @@ resource "proxmox_lxc" "pi-hole-secondary" {
   memory          = 1024
   cores           = 2
   nameserver      = var.gateway_ip
+
+  features {
+    nesting = true
+  }
 
   // Terraform will crash without rootfs defined
   rootfs {

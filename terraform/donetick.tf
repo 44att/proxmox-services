@@ -2,7 +2,7 @@
 resource "proxmox_lxc" "donetick" {
   target_node     = "pve2"
   hostname        = "donetick"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -10,6 +10,10 @@ resource "proxmox_lxc" "donetick" {
   onboot          = true
   vmid            = var.donetick_lxcid
 
+  features {
+    nesting = true
+  }
+  
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
@@ -33,7 +37,7 @@ resource "proxmox_lxc" "donetick" {
       host     = var.pve2_address
     }
     inline = [
-      "pct set ${var.donetick_lxcid} -mp0 /mnt/pve/app_config/donetick,mp=/Donetick-data",
+      "pct set ${var.donetick_lxcid} -mp0 /mnt/pve/app_config/donetick,mp=/mnt/app_config/donetick",
       "pct reboot ${var.donetick_lxcid}",
     ]
   }

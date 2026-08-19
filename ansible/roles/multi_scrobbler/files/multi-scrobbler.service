@@ -4,6 +4,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
+Environment=CONFIG_DIR=/opt/multi-scrobbler/config
 Type=exec
 Restart=on-failure
 WorkingDirectory=/opt/multi-scrobbler

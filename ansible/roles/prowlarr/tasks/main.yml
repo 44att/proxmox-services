@@ -22,12 +22,11 @@
   apt:
     pkg:
       - curl
-      - sqlite3
     state: latest
 
 - name: Install Prowlarr
   unarchive:
-    src: https://github.com/Prowlarr/Prowlarr/releases/download/v2.3.5.5327/Prowlarr.master.2.3.5.5327.linux-core-x64.tar.gz
+    src: https://github.com/Prowlarr/Prowlarr/releases/download/v2.5.2.5491/Prowlarr.master.2.5.2.5491.linux-core-x64.tar.gz
     dest: /opt/
     remote_src: true
   notify:
@@ -35,7 +34,7 @@
     
 - name: Synchronize Prowlarr config from backup source
   synchronize:
-    src: "/Prowlarr-data/"
+    src: "/mnt/app_config/prowlarr/"
     dest: "/var/lib/prowlarr"
   delegate_to: "{{ inventory_hostname }}"
 
@@ -70,4 +69,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /var/lib/prowlarr/ /Prowlarr-data"
+    job: "rsync -qauzog /var/lib/prowlarr/ /mnt/app_config/prowlarr"

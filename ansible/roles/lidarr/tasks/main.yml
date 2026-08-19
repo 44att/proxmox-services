@@ -10,20 +10,69 @@
     name: lidarr
     uid: 1000
     groups: lidarr
-    shell: /sbin/nologin
+    shell: /bin/zsh
     append: true
     state: present
-    create_home: false
+    create_home: true
 
 - name: Install packages
   apt:
     pkg:
       - curl
       - mediainfo
-      - sqlite3
       - libchromaprint-tools
-      - ffmpeg
     state: latest
+
+- name: Copy .ssh directory from storage
+  copy:
+    src: /mnt/app_config/lidarr/.ssh/
+    dest: /home/lidarr/.ssh/
+    owner: lidarr
+    group: lidarr
+    remote_src: true
+    mode: 0700
+
+- name: Set .ssh file permissions
+  file:
+    path: "/home/lidarr/.ssh/{{ item }}"
+    mode: 0600
+  loop:
+    - id_ed25519
+    - id_ed25519.pub
+
+- name: Copy .oh-my-zsh from root user
+  copy:
+    src: /root/.oh-my-zsh/
+    dest: /home/lidarr/.oh-my-zsh/
+    owner: lidarr
+    group: lidarr
+    remote_src: true
+
+- name: Set correct permissions for oh-my-zsh files
+  file:
+    path: /home/lidarr/.oh-my-zsh/
+    owner: lidarr
+    group: lidarr
+    mode: u=rwX,g=rX,o=rX
+    recurse: true
+
+- name: Create .zshrc file
+  copy:
+    src: /root/.zshrc
+    dest: /home/lidarr/.zshrc
+    owner: lidarr
+    group: lidarr
+    mode: 0644
+    remote_src: true
+
+- name: Replace root with lidarr in .zshrc
+  lineinfile:
+    path: /home/lidarr/.zshrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: export DEFAULT_USER="root", line: export DEFAULT_USER="lidarr" }
+    - { regexp: export ZSH=/root/.oh-my-zsh, line: export ZSH=/home/lidarr/.oh-my-zsh }
 
 - name: Create Lidarr directories if they don't exist
   file:
@@ -32,8 +81,17 @@
     mode: 0755
   loop:
     - /var/lib/lidarr
+    - /var/log/lidarr
     - /opt/scripts
     - /tmp/cache
+
+- name: Create log files if they don't exist
+  file:
+    path: "{{ item }}"
+    state: touch
+  loop:
+    - /var/log/lidarr/import-to-staging.log
+    - /var/log/lidarr/beets-call.log
 
 - name: Install Lidarr
   unarchive:
@@ -58,12 +116,13 @@
     - /opt/Lidarr
     - /opt/scripts
     - /var/lib/lidarr
+    - /var/log/lidarr
     - /tmp/cache
 
-- name: Copy convert ALAC shell script
-  copy:
-    src: convert-flac-to-alac.sh
-    dest: /opt/scripts/convert-flac-to-alac.sh
+- name: Copy import shell script
+  template:
+    src: import-to-staging-dir.sh.j2
+    dest: /opt/scripts/import-to-staging-dir.sh
     owner: lidarr
     group: lidarr
     mode: +x
@@ -77,10 +136,21 @@
   notify:
     - Start Lidarr
 
-- name: Remove old cron job if it exists
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/lidarr
+    dest: /etc/logrotate.d/lidarr
+
+- name: Run logrotate
+  shell: logrotate /etc/logrotate.conf
+
+- name: Remove old cron jobs if they exist
   cron:
-    name: "backup lidarr"
+    name: "{{ item }}"
     state: absent
+  loop:
+    - "backup lidarr"
+    - "logrotate"
 
 - name: Create backup cron job
   cron:
@@ -88,4 +158,12 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /var/lib/lidarr/ /mnt/app_config/lidarr"
+    job: "rsync -qauzog --exclude=.ssh/ --exclude=MediaCover/ /var/lib/lidarr/ /mnt/app_config/lidarr"
+
+- name: Create logrotate cron job
+  cron:
+    name: "logrotate"
+    weekday: "*"
+    minute: "*/10"
+    hour: "*"
+    job: "logrotate /etc/logrotate.conf"

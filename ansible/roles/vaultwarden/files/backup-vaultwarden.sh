@@ -6,7 +6,7 @@
 
 VAULTWARDEN_WORKING_DIR="/var/lib/vaultwarden"
 BACKUP_DIR="/tmp/vaultwarden-backups"
-FINAL_DIR="/Vaultwarden-data/backups"
+FINAL_DIR="/mnt/app_config/vaultwarden/backups"
 
 # create backup directory and set working directory
 function prep {
@@ -37,7 +37,7 @@ function backup_attachments {
 
 # keep 3 most recent .sqlite3 files and attachment dirs, move to NAS, then tidy tmp dir
 function tidy {
-	rsync -qauzog "$BACKUP_DIR/" "$FINAL_DIR"
+	rsync -qauzog --no-perms --no-owner --no-group "$BACKUP_DIR/" "$FINAL_DIR"
 
 	count=$(ls -1 "$FINAL_DIR"/*.sqlite3 2>/dev/null | wc -l)
 	if [ $count != 0 ]; then

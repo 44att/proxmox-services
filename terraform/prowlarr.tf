@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "prowlarr" {
   target_node     = "pve2"
   hostname        = "prowlarr"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -10,6 +10,10 @@ resource "proxmox_lxc" "prowlarr" {
   vmid            = var.prowlarr_lxcid
   memory          = 1024
 
+  features {
+    nesting = true
+  }
+  
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
@@ -34,7 +38,7 @@ resource "proxmox_lxc" "prowlarr" {
     }
     inline = [
       "pct set ${var.prowlarr_lxcid} -mp0 /mnt/pve/media_root,mp=/mnt/media_root",
-      "pct set ${var.prowlarr_lxcid} -mp1 /mnt/pve/app_config/prowlarr,mp=/Prowlarr-data",
+      "pct set ${var.prowlarr_lxcid} -mp1 /mnt/pve/app_config/prowlarr,mp=/mnt/app_config/prowlarr",
       "pct reboot ${var.prowlarr_lxcid}",
     ]
   }

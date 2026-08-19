@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "plex" {
   target_node     = "pve2"
   hostname        = "plex"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -11,6 +11,10 @@ resource "proxmox_lxc" "plex" {
   memory          = 8192
   cores           = 2
 
+  features {
+    nesting = true
+  }
+  
   // Terraform will crash without rootfs defined
   rootfs {
     storage = "local-zfs"
@@ -43,8 +47,9 @@ resource "proxmox_lxc" "plex" {
       "rm -f ~/.nvidia-driver-version",
       "echo '${var.nvidia_driver_version}' >> ~/.nvidia-driver-version",
       "pct push ${var.plex_lxcid} ~/.nvidia-driver-version /root/.nvidia-driver-version",
-      "pct set ${var.plex_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media",
-      "pct set ${var.plex_lxcid} -mp1 /mnt/pve/app_config/plex,mp=/mnt/app_config/plex",
+      "pct set ${var.plex_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media_root/media",
+      "pct set ${var.plex_lxcid} -mp1 /mnt/pve/media_root/aurral,mp=/mnt/media_root/aurral",
+      "pct set ${var.plex_lxcid} -mp2 /mnt/pve/app_config/plex,mp=/mnt/app_config/plex",
       "pct reboot ${var.plex_lxcid}",
     ]
   }

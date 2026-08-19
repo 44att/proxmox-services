@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "tailscale" {
   target_node     = "pve2"
   hostname        = "tailscale"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -37,7 +37,7 @@ resource "proxmox_lxc" "tailscale" {
       host     = var.pve2_address
     }
     inline = [
-      "pct set ${var.tailscale_lxcid} -mp0 /mnt/pve/app_config/tailscale,mp=/Tailscale-data",
+      "pct set ${var.tailscale_lxcid} -mp0 /mnt/pve/app_config/tailscale,mp=/mnt/app_config/tailscale",
       "pct set ${var.tailscale_lxcid} --dev0 /dev/net/tun",
       "pct reboot ${var.tailscale_lxcid}",
     ]

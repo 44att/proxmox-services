@@ -44,7 +44,7 @@
 - name: Install nvm
   shell: >
     set -o pipefail &&
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.6/install.sh | bash
   args:
     executable: /bin/bash
     creates: /root/.nvm/nvm.sh
@@ -74,7 +74,7 @@
 
 - name: Symlink config file
   file:
-    src: /Starbase80-data/config.json
+    src: /mnt/app_config/starbase80/config.json
     dest: /opt/starbase80/starbase-81-src/src/config/config.json
     state: link
     force: true

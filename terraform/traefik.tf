@@ -1,13 +1,17 @@
 resource "proxmox_lxc" "traefik" {
   target_node     = "pve2"
   hostname        = "traefik"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
   start           = true
   onboot          = true
   vmid            = var.traefik_lxcid
+
+  features {
+    nesting = true
+  }
 
   // Terraform will crash without rootfs defined
   rootfs {
@@ -32,7 +36,7 @@ resource "proxmox_lxc" "traefik" {
       host     = var.pve2_address
     }
     inline = [
-      "pct set ${var.traefik_lxcid} -mp0 /mnt/pve/app_config/traefik,mp=/traefik-config",
+      "pct set ${var.traefik_lxcid} -mp0 /mnt/pve/app_config/traefik,mp=/mnt/app_config/traefik",
       "pct reboot ${var.traefik_lxcid}",
     ]
   }

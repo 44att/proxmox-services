@@ -4,7 +4,7 @@
 
 - name: Install Traefik
   unarchive:
-    src: https://github.com/traefik/traefik/releases/download/v3.6.16/traefik_v3.6.16_linux_amd64.tar.gz
+    src: https://github.com/traefik/traefik/releases/download/v3.7.11/traefik_v3.7.11_linux_amd64.tar.gz
     dest: /usr/local/bin
     remote_src: true
   notify:
@@ -78,7 +78,7 @@
 
 - name: Synchronize Bazarr config from backup source
   synchronize:
-    src: "/traefik-config/certs/"
+    src: "/mnt/app_config/traefik/certs/"
     dest: "/etc/traefik/certs"
   delegate_to: "{{ inventory_hostname }}"
 
@@ -123,13 +123,13 @@
     weekday: "*"
     minute: "*/5"
     hour: "*"
-    job: "rsync -qauzog --delete /var/log/traefik/ /traefik-config/logs"
+    job: "rsync -qauzog --delete /var/log/traefik/ /mnt/app_config/traefik/logs"
 
 - name: Create acme.json cron job
   cron:
     name: "copy acme.json"
     special_time: daily
-    job: "rsync -qauzog /etc/traefik/certs/ /traefik-config/certs"
+    job: "rsync -qauzog /etc/traefik/certs/ /mnt/app_config/traefik/certs"
 
 - name: Create logrotate cron job
   cron:

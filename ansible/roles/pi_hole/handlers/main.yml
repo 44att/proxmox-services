@@ -9,3 +9,12 @@
     name: unbound
     state: restarted
     daemon_reload: true
+
+- name: Stop unbound-resolvconf
+  systemd:
+    name: unbound-resolvconf
+    state: stopped
+    enabled: false
+  
+- name: Reboot
+  reboot:

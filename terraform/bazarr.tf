@@ -1,7 +1,7 @@
 resource "proxmox_lxc" "bazarr" {
   target_node     = "pve2"
   hostname        = "bazarr"
-  ostemplate      = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ostemplate      = "local:vztmpl/ubuntu-26.04-standard_26.04-1_amd64.tar.zst"
   unprivileged    = true
   ostype          = "ubuntu"
   ssh_public_keys = file(var.pub_ssh_key)
@@ -9,6 +9,10 @@ resource "proxmox_lxc" "bazarr" {
   onboot          = true
   vmid            = var.bazarr_lxcid
   memory          = 1024
+
+  features {
+    nesting = true
+  }
 
   // Terraform will crash without rootfs defined
   rootfs {
@@ -34,7 +38,7 @@ resource "proxmox_lxc" "bazarr" {
     }
     inline = [
       "pct set ${var.bazarr_lxcid} -mp0 /mnt/pve/media_root/media,mp=/mnt/media_root/media",
-      "pct set ${var.bazarr_lxcid} -mp1 /mnt/pve/app_config/bazarr,mp=/Bazarr-data",
+      "pct set ${var.bazarr_lxcid} -mp1 /mnt/pve/app_config/bazarr,mp=/mnt/app_config/bazarr",
       "pct reboot ${var.bazarr_lxcid}",
     ]
   }

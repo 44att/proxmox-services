@@ -45,7 +45,7 @@
 - name: Install nvm
   shell: >
     set -o pipefail &&
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.6/install.sh | bash
   args:
     executable: /bin/bash
     creates: /root/.nvm/nvm.sh
@@ -130,14 +130,14 @@
 
 - name: Synchronize Seerr config from backup source
   synchronize:
-    src: "/Seerr-data/"
+    src: "/mnt/app_config/seerr/"
     dest: "/etc/seerr/"
   delegate_to: "{{ inventory_hostname }}"
 
 - name: Copy Seerr systemd service file
-  copy:
-    src: seerr.service
-    dest: /etc/systemd/system
+  template:
+    src: seerr.service.j2
+    dest: /etc/systemd/system/seerr.service
     owner: root
     group: root
   notify:
@@ -154,4 +154,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /etc/seerr/ /Seerr-data"
+    job: "rsync -qauzog /etc/seerr/ /mnt/app_config/seerr"

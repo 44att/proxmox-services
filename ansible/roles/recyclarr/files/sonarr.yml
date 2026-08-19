@@ -1,10 +1,7 @@
 ###################################################################################################
-# Recyclarr Configuration Template: WEB-1080p (V4)                                                #
-# Updated: 2024-10-02                                                                             #
+# Recyclarr Configuration: WEB-1080p (V4)                                                         #
+# Updated for Recyclarr v8.0+                                                                     #
 # Documentation: https://recyclarr.dev                                                            #
-# Note: If you are using multiple profiles in a single instance, please read the following        #
-# documentation about file merging:                                                               #
-# https://recyclarr.dev/reference/config-examples/#merge-single-instance                          #
 # This config file is for use with Sonarr V4 only                                                 #
 ###################################################################################################
 
@@ -14,13 +11,15 @@ sonarr:
     base_url: !secret sonarr_url
     api_key: !secret sonarr_api_key
 
-    include:
-      # Comment out any of the following includes to disable them
-      - template: sonarr-quality-definition-series
-      # Choose between the standard or alternative quality profile setup (choose one only)
-      - template: sonarr-v4-quality-profile-web-1080p
-      # - template: sonarr-v4-quality-profile-web-1080p-alternative
-      - template: sonarr-v4-custom-formats-web-1080p
+    # Replaces 'sonarr-quality-definition-series' template
+    quality_definition:
+      type: series
+
+    # Replaces 'sonarr-v4-quality-profile-web-1080p' template
+    quality_profiles:
+      - trash_id: dcf3a40bcecc55a6d55ef61502b48530 # WEB-1080p
+        # If you wanted the alternative version, you would use this trash_id instead:
+        # trash_id: 1111005a39cbfa2af98b03046bc1209b # WEB-1080p-alternative
 
 # Custom Formats: https://recyclarr.dev/reference/configuration/custom-formats/
     custom_formats:

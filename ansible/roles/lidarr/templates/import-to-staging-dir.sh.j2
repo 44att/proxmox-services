@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ "$lidarr_eventtype" != "AlbumDownload" ]; then
+    exit 0
+fi
+
+BASE_DEST_DIR="/mnt/media_root/lidarr"
+
+ARTIST="${lidarr_artist_name:-Unknown Artist}"
+ALBUM="${lidarr_album_title:-Unknown Album}"
+TARGET_DIR="$BASE_DEST_DIR/$ARTIST/$ALBUM"
+
+mkdir -p "$TARGET_DIR"
+
+IFS='|' read -ra FILE_PATHS <<< "$lidarr_addedtrackpaths"
+
+for FILE_PATH in "${FILE_PATHS[@]}"; do
+    if [ -f "$FILE_PATH" ]; then
+        SOURCE_DIR=$(dirname "$FILE_PATH")
+        FILE_NAME=$(basename "$FILE_PATH")
+        
+        mv "$FILE_PATH" "$TARGET_DIR/$FILE_NAME"
+        
+        echo "$(date): Moved $FILE_NAME to $TARGET_DIR" >> /var/log/lidarr/import-to-staging.log
+
+        if [ -d "$SOURCE_DIR" ]; then
+            rmdir -p "$SOURCE_DIR" 2>/dev/null
+        fi
+    fi
+done
+
+if [ -d "$TARGET_DIR" ]; then
+    ssh root@{{ tf_beets_ip }} "beet import -q '$TARGET_DIR'" >> /var/log/lidarr/beets-call.log 2>&1
+fi
+
+exit 0

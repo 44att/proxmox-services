@@ -35,6 +35,16 @@
   shell: >
     git config --global --add safe.directory /opt/multi-scrobbler
 
+- name: Download Multi-scrobbler
+  git:
+    repo: https://github.com/FoxxMD/multi-scrobbler.git
+    dest: /opt/multi-scrobbler
+    depth: 1
+    force: true
+    version: 0.16.3
+  notify:
+    - Start Multi-scrobbler
+
 - name: Set nvm environment
   copy:
     src: nvm.env
@@ -44,7 +54,7 @@
 - name: Install nvm
   shell: >
     set -o pipefail &&
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.4/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.6/install.sh | bash
   args:
     executable: /bin/bash
     creates: /root/.nvm/nvm.sh
@@ -53,28 +63,31 @@
     NVM_DIR: /root/.nvm
   changed_when: false
 
+- name: Read node version from .nvmrc file in repository
+  slurp:
+    src: /opt/multi-scrobbler/.nvmrc 
+  register: encoded_nvmrc_node_version
+
+- name: Set nvmrc node version variable
+  set_fact:
+    nvmrc_node_version: "{{ encoded_nvmrc_node_version.content | b64decode | trim | regex_replace('^v', '') }}"
+
 - name: Install nodejs
   shell: >
     source /root/nvm.env &&
-    nvm install 24.14.0
+    nvm install {{ nvmrc_node_version }} &&
+    nvm use {{ nvmrc_node_version }} &&
+    nvm alias default {{ nvmrc_node_version }}
   args:
     executable: /bin/bash
-    chdir: /root/.nvm
+    creates: "/root/.nvm/versions/node/v{{ nvmrc_node_version }}"
   changed_when: false
-
-- name: Download Multi-scrobbler
-  git:
-    repo: https://github.com/FoxxMD/multi-scrobbler.git
-    dest: /opt/multi-scrobbler
-    depth: 1
-    force: true
-    version: 0.13.3
-  notify:
-    - Start Multi-scrobbler
 
 - name: Install Multi-scrobbler
   shell: >
     source /root/nvm.env &&
+    nvm use &&
+    npm cache clean --force &&
     npm install
   args:
     executable: /bin/bash
@@ -107,9 +120,11 @@
 
 - name: Symlink config file
   file:
-    src: /Multiscrobbler-data/config.json
+    src: /mnt/app_config/multi-scrobbler/config.json
     dest: /opt/multi-scrobbler/config/config.json
     state: link
+  notify:
+    - Start Multi-scrobbler
 
 - name: Copy Multi-scrobbler start shell script
   copy:

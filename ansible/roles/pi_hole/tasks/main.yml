@@ -16,7 +16,7 @@
     state: directory
     mode: 0755
   loop:
-    - /etc/pihole
+    - /etc/pihole/hosts
     - /var/log/unbound
 
 - name: Create unbound log file
@@ -69,3 +69,5 @@
       - --unattended
   notify:
     - Restart Pi-hole
+    - Stop unbound-resolvconf
+    - Reboot
