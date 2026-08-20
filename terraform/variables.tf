@@ -129,7 +129,7 @@ variable "radarr_lxcid" {
   default = 506
 }
 
-variable "sabnzbd_lxcid" {
+variable "nzbget_lxcid" {
   type    = number
   default = 507
 }
@@ -244,9 +244,9 @@ variable "radarr_mac" {
   default = "36:67:C0:9C:48:9C"
 }
 
-variable "sabnzbd_mac" {
+variable "nzbget_mac" {
   type    = string
-  default = "12:E8:11:73:7E:38"
+  default = "92:fb:fc:36:79:fd"
 }
 
 variable "cockpit_mac" {
@@ -394,7 +394,7 @@ variable "prowlarr_ip" {
   default = "10.1.7.11/24"
 }
 
-variable "sabnzbd_ip" {
+variable "nzbget_ip" {
   type    = string
   default = "10.1.7.13/24"
 }

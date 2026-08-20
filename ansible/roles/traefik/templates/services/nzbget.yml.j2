@@ -1,15 +1,15 @@
 ---
 http:
   routers:
-    to-sabnzbd-http:
+    to-nzbget-http:
       rule: "Host(`nzbs.{{ external_domain }}`)"
-      service: sabnzbd
+      service: nzbget
       middlewares:
         - https-redirect
 
-    to-sabnzbd:
+    to-nzbget:
       rule: "Host(`nzbs.{{ external_domain }}`)"
-      service: sabnzbd
+      service: nzbget
       tls:
         certResolver: letsencrypt
         domains:
@@ -18,8 +18,8 @@ http:
               - "*.{{ external_domain }}"
 
   services:
-    sabnzbd:
+    nzbget:
       loadBalancer:
         serversTransport: insecure-transport
         servers:
-          - url: https://{{ tf_sabnzbd_ip }}:8080
+          - url: http://{{ tf_nzbget_ip }}:6789

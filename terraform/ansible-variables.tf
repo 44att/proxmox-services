@@ -12,7 +12,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_prowlarr_lxcid: ${var.prowlarr_lxcid}
     tf_radarr_lxcid: ${var.radarr_lxcid}
     tf_lidarr_lxcid: ${var.lidarr_lxcid}
-    tf_sabnzbd_lxcid: ${var.sabnzbd_lxcid}
+    tf_nzbget_lxcid: ${var.nzbget_lxcid}
     tf_sonarr_lxcid: ${var.sonarr_lxcid}
     tf_traefik_lxcid: ${var.traefik_lxcid}
     tf_wireguard_lxcid: ${var.wireguard_lxcid}
@@ -39,7 +39,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_prowlarr_ip: ${trimsuffix(var.prowlarr_ip, "/24")}
     tf_radarr_ip: ${trimsuffix(var.radarr_ip, "/24")}
     tf_lidarr_ip: ${trimsuffix(var.lidarr_ip, "/24")}
-    tf_sabnzbd_ip: ${trimsuffix(var.sabnzbd_ip, "/24")}
+    tf_nzbget_ip: ${trimsuffix(var.nzbget_ip, "/24")}
     tf_sonarr_ip: ${trimsuffix(var.sonarr_ip, "/24")}
     tf_traefik_ip: ${trimsuffix(var.traefik_ip, "/24")}
     tf_wireguard_ip: ${trimsuffix(var.wireguard_ip, "/24")}

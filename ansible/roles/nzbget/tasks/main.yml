@@ -1,0 +1,74 @@
+---
+- name: Create NZBGet group
+  group:
+    name: nzbget
+    gid: 10000
+    state: present
+
+- name: Create NZBGet user
+  user:
+    name: nzbget
+    uid: 1000
+    groups: nzbget
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Create NZBGet directory if it does not exist
+  file:
+    path: /opt
+    state: directory
+    mode: 0755
+
+- name: Download NZBGet installer
+  get_url:
+    url: https://github.com/nzbgetcom/nzbget/releases/download/v26.2/nzbget-26.2-bin-linux.run
+    dest: /tmp/nzbget-installer.run
+    force: true
+    mode: 0755
+
+- name: Execute installer binary package
+  shell: /tmp/nzbget-installer.run  
+  args:
+    executable: /bin/bash
+    chdir: /opt
+    creates: /opt/nzbget
+  notify:
+    - Start NZBGet
+
+- name: Recursively change ownership of NZBGet directory
+  file:
+    path: /opt/nzbget/
+    state: directory
+    recurse: true
+    owner: nzbget
+    group: nzbget
+
+- name: Copy systemd service file to server
+  copy:
+    src: nzbget.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start NZBGet
+
+- name: Stat config file
+  stat:
+    path: /opt/nzbget/nzbget.conf
+  register: config
+
+- name: Remove default config file
+  file:
+    path: /opt/nzbget/nzbget.conf
+    state: absent
+  when: config.stat is defined and not config.stat.islnk
+
+- name: Symlink config file
+  file:
+    src: /mnt/app_config/nzbget/nzbget.conf
+    dest: /opt/nzbget/nzbget.conf
+    state: link
+  notify:
+    - Start NZBGet
