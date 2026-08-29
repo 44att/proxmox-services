@@ -37,7 +37,9 @@ resource "proxmox_lxc" "syncthing" {
       host     = var.pve2_address
     }
     inline = [
-      "pct set ${var.syncthing_lxcid} -mp0 /mnt/pve/app_config/syncthing,mp=/mnt/app_config/syncthing",
+      "pct set ${var.syncthing_lxcid} -mp0 /mnt/pve/documents/matt,mp=/mnt/documents/matt",
+      "pct set ${var.syncthing_lxcid} -mp1 /mnt/pve/pictures/photography,mp=/mnt/pictures/photography",
+      "pct set ${var.syncthing_lxcid} -mp2 /mnt/pve/app_config/syncthing,mp=/mnt/app_config/syncthing",
       "pct reboot ${var.syncthing_lxcid}",
     ]
   }

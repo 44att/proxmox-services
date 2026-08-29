@@ -10,48 +10,94 @@
     name: syncthing
     uid: 1000
     groups: syncthing
-    shell: /sbin/nologin
+    shell: /bin/zsh
     append: true
     state: present
-    create_home: false
+    create_home: true
 
-- name: Install required packages
-  apt:
-    pkg:
-      - gnupg
-    state: latest
+- name: Copy .oh-my-zsh from root user
+  copy:
+    src: /root/.oh-my-zsh/
+    dest: /home/syncthing/.oh-my-zsh/
+    owner: syncthing
+    group: syncthing
+    mode: u=rwX,g=rX,o=rX
+    remote_src: true
 
-# - name: Create Syncthing directory if it does not exist
-#   file:
-#     path: /var/lib/syncthing
-#     state: directory
-#     mode: 0755
+- name: Create .zshrc file
+  copy:
+    src: /root/.zshrc
+    dest: /home/syncthing/.zshrc
+    owner: syncthing
+    group: syncthing
+    mode: 0644
+    remote_src: true
 
-# - name: Synchronize Syncthing config from backup source
-#   synchronize:
-#     src: "/Syncthing-data/"
-#     dest: "/var/lib/syncthing/"
-#   delegate_to: "{{ inventory_hostname }}"
+- name: Replace root with syncthing in .zshrc
+  lineinfile:
+    path: /home/syncthing/.zshrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: export DEFAULT_USER="root", line: export DEFAULT_USER="syncthing" }
+    - { regexp: export ZSH=/root/.oh-my-zsh, line: export ZSH=/home/syncthing/.oh-my-zsh }
 
-# - name: Recursively change ownership of Syncthing directory
-#   file:
-#     path: /var/lib/syncthing
-#     state: directory
-#     recurse: true
-#     owner: syncthing
-#     group: syncthing
+- name: Create Syncthing directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - /var/lib/syncthing
+    - /var/log/syncthing
 
-- name: Add the Syncthing APT release key
-  apt_key:
-    url: https://syncthing.net/release-key.gpg
-    keyring: /etc/apt/trusted.gpg.d/syncthing-archive-keyring.gpg
+- name: Create log file if it doesn't exist
+  file:
+    path: /var/log/syncthing/backup.log
+    state: touch
+
+- name: Get the config backups
+  find:
+    paths: "/mnt/app_config/syncthing/backups"
+    patterns: 'syncthing-config-*.tar.gz'
+  register: config_backups
+
+- name: Get latest config backup
+  set_fact:
+    latest_config_backup: "{{ config_backups.files | sort(attribute='mtime',reverse=true) | first }}"
+  when: config_backups.files | default('', true) | trim != ''
+
+- name: Extract the latest config backup
+  unarchive:
+    src: "{{ latest_config_backup.path }}"
+    dest: /var/lib/syncthing/
+    remote_src: true
+  when: latest_config_backup is defined
+  notify:
+    - Restart Syncthing
+
+- name: Recursively change ownership of Syncthing directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: syncthing
+    group: syncthing
+  loop:
+    - /var/lib/syncthing
+    - /var/log/syncthing
+
+- name: Add Syncthing repository
+  deb822_repository:
+    name: syncthing
+    types: [deb]
+    uris: https://apt.syncthing.net/
+    signed_by: https://syncthing.net/release-key.gpg
+    suites: [syncthing]
+    components: [stable-v2]
     state: present
-
-- name: Add the Syncthing repository
-  apt_repository:
-    repo: deb https://apt.syncthing.net/ syncthing stable
-    filename: syncthing
-    state: present
+    enabled: true
+    install_python_debian: true
 
 - name: Create systemd service directory
   file:
@@ -77,15 +123,23 @@
   notify:
     - Restart Syncthing
 
-# - name: Remove old cron job if it exists
-#   cron:
-#     name: "backup syncthing"
-#     state: absent
+- name: Copy logrotate file to server
+  copy:
+    src: logrotate.d/syncthing
+    dest: /etc/logrotate.d/syncthing
 
-# - name: Create backup cron job
-#   cron:
-#     name: "backup syncthing"
-#     weekday: "*"
-#     minute: "*/30"
-#     hour: "*"
-#     job: "rsync -qauzog /var/lib/syncthing/ /Syncthing-data"
+- name: Run logrotate
+  shell: logrotate /etc/logrotate.conf
+
+- name: Create backup cron job
+  cron:
+    name: "backup syncthing"
+    minute: "0"
+    hour: "2"
+    job: 'tar -czf /mnt/app_config/syncthing/backups/syncthing-config-$(date +\%F).tar.gz -C /var/lib/syncthing config.xml https-cert.pem https-key.pem cert.pem key.pem && find /mnt/app_config/syncthing/backups -name "syncthing-config-*.tar.gz" -mtime +7 -delete >> /var/log/syncthing/backup.log 2>&1'
+
+- name: Create logrotate cron job
+  cron:
+    name: "logrotate"
+    minute: "*/10"
+    job: "logrotate /etc/logrotate.conf"

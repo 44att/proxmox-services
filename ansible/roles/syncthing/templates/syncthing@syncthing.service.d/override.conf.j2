@@ -1,3 +1,2 @@
 [Service]
-ExecStart=
-ExecStart=/usr/bin/syncthing serve --no-restart --gui-address={{ tf_syncthing_ip }}:8384 --logflags=0 --home=/mnt/pve/app_config/syncthing
+ExecStart="/usr/bin/syncthing serve --no-restart --gui-address={{ tf_syncthing_ip }}:8384 --home=/var/lib/syncthing"

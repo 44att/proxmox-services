@@ -1,0 +1,9 @@
+/var/log/syncthing/*.log {
+  daily
+  rotate 7
+  compress
+  missingok
+  notifempty
+  create 644 syncthing syncthing
+  copytruncate
+}
