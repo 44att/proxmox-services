@@ -41,7 +41,7 @@
     dest: /opt/multi-scrobbler
     depth: 1
     force: true
-    version: 0.16.3
+    version: 0.16.5
   notify:
     - Start Multi-scrobbler
 
