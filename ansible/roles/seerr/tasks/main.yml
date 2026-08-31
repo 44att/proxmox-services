@@ -154,4 +154,4 @@
     weekday: "*"
     minute: "*/30"
     hour: "*"
-    job: "rsync -qauzog /etc/seerr/ /mnt/app_config/seerr"
+    job: "rsync -qauzog --exclude=logs/ /etc/seerr/ /mnt/app_config/seerr"
