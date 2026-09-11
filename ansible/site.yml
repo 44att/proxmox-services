@@ -1,5 +1,6 @@
 ---
 - import_playbook: ./playbooks/aurral.yml
+- import_playbook: ./playbooks/baikal.yml
 - import_playbook: ./playbooks/bazarr.yml
 - import_playbook: ./playbooks/beets.yml
 - import_playbook: ./playbooks/cockpit.yml

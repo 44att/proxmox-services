@@ -1,0 +1,27 @@
+---
+http:
+  routers:
+    to-baikal-http:
+      rule: "Host(`calendars.{{ external_domain }}`)"
+      service: baikal
+      middlewares:
+        - https-redirect
+
+    to-baikal:
+      rule: "Host(`calendars.{{ external_domain }}`)"
+      service: baikal
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ external_domain }}"
+            sans:
+              - "*.{{ external_domain }}"
+      middlewares:
+        - baikal-caldav
+        - baikal-carddav
+
+  services:
+    baikal:
+      loadBalancer:
+        servers:
+          - url: http://{{ tf_baikal_ip }}

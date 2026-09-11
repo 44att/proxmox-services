@@ -219,6 +219,11 @@ variable "navidrome_lxcid" {
   default = 519
 }
 
+variable "baikal_lxcid" {
+  type    = number
+  default = 520
+}
+
 variable "traefik_mac" {
   type    = string
   default = "B6:1A:E1:C6:86:03"
@@ -352,6 +357,11 @@ variable "beets_mac" {
 variable "navidrome_mac" {
   type    = string
   default = "3e:e5:58:bd:56:1b"
+}
+
+variable "baikal_mac" {
+  type    = string
+  default = "ee:5f:4e:43:b8:78"
 }
 
 variable "pi-hole-primary_ip" {
@@ -497,4 +507,9 @@ variable "beets_ip" {
 variable "navidrome_ip" {
   type    = string
   default = "10.1.7.30/24"
+}
+
+variable "baikal_ip" {
+  type    = string
+  default = "10.1.7.31/24"
 }

@@ -1,0 +1,101 @@
+---
+- name: Create Baikal group
+  group:
+    name: baikal
+    gid: 10000
+    state: present
+
+- name: Create Baikal user
+  user:
+    name: baikal
+    uid: 1000
+    groups: baikal
+    shell: /sbin/nologin
+    append: true
+    state: present
+    create_home: false
+
+- name: Install packages
+  apt:
+    pkg:
+      - nginx
+      - php8.5-fpm
+      - php8.5-pgsql
+      - php8.5-xml
+      - unrar
+      - unzip
+    state: latest
+
+- name: Ensure services are started and enabled
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - nginx
+    - php8.5-fpm
+
+- name: Extract Baikal to web root
+  unarchive:
+    src: https://github.com/sabre-io/Baikal/releases/download/0.12.1/baikal-0.12.1.zip
+    dest: /var/www
+    remote_src: true
+    creates: /var/www/baikal
+  notify:
+    - Restart Nginx
+
+- name: Set correct permissions on baikal directory
+  file:
+    path: /var/www/baikal
+    state: directory
+    recurse: true
+    owner: www-data
+    group: www-data
+    mode: 0755
+
+- name: Deploy Nginx virtual host config
+  blockinfile:
+    path: /etc/nginx/sites-available/baikal
+    create: true
+    mode: 0644
+    block: |
+      server {
+        listen       80  default_server;
+        server_name  {{ tf_baikal_ip }};
+
+        root  /var/www/baikal/html;
+        index index.php;
+
+        charset utf-8;
+
+        location ~ /(\.ht|Core|Specific|config) {
+          deny all;
+          return 404;
+        }
+
+        location ~ ^(.+\.php)(.*)$ {
+          try_files $fastcgi_script_name =404;
+          include        /etc/nginx/fastcgi_params;
+          fastcgi_split_path_info  ^(.+\.php)(.*)$;
+          fastcgi_pass   unix:/var/run/php/php8.5-fpm.sock;
+          fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+          fastcgi_param  PATH_INFO        $fastcgi_path_info;
+        }
+      }
+  notify:
+    - Restart Nginx
+
+- name: Disable default Nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify:
+    - Restart Nginx
+
+- name: Enable Baikal Nginx site
+  file:
+    src: /etc/nginx/sites-available/baikal
+    dest: /etc/nginx/sites-enabled/baikal
+    state: link
+  notify:
+    - Restart Nginx

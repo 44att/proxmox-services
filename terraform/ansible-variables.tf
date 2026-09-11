@@ -29,6 +29,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_aurral_lxcid: ${var.aurral_lxcid}
     tf_beets_lxcid: ${var.beets_lxcid}
     tf_navidrome_lxcid: ${var.navidrome_lxcid}
+    tf_baikal_lxcid: ${var.baikal_lxcid}
     tf_postgres_lxcid: ${var.postgres_lxcid}
 
     # IPs
@@ -59,6 +60,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_aurral_ip: ${trimsuffix(var.aurral_ip, "/24")}
     tf_beets_ip: ${trimsuffix(var.beets_ip, "/24")}
     tf_navidrome_ip: ${trimsuffix(var.navidrome_ip, "/24")}
+    tf_baikal_ip: ${trimsuffix(var.baikal_ip, "/24")}
     tf_postgres_ip: ${trimsuffix(var.postgres_ip, "/24")}
 
     # Passwords
@@ -71,6 +73,7 @@ resource "local_file" "tf_ansible_vars_new" {
     tf_bazarr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["bazarr-password"]}
     tf_seerr_database_password: ${data.vault_kv_secret_v2.postgres-db.data["seerr-password"]}
     tf_donetick_database_password: ${data.vault_kv_secret_v2.postgres-db.data["donetick-password"]}
+    tf_baikal_database_password: ${data.vault_kv_secret_v2.postgres-db.data["baikal-password"]}
     DOC
   filename = "./tf_ansible_vars.yml"
 }

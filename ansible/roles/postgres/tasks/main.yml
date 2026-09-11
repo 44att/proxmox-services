@@ -84,6 +84,7 @@
     - { name: bazarr, password: "{{ tf_bazarr_database_password }}" }
     - { name: seerr, password: "{{ tf_seerr_database_password }}" }
     - { name: donetick, password: "{{ tf_donetick_database_password }}" }
+    - { name: baikal, password: "{{ tf_baikal_database_password }}" }
   notify:
     - Start Postgres
 
@@ -107,6 +108,7 @@
     - { name: seerr, owner: seerr, comment: 'Seerr database' }
     - { name: bazarr, owner: bazarr, comment: 'Bazarr database' }
     - { name: donetick, owner: donetick, comment: 'Donetick database' }
+    - { name: baikal, owner: baikal, comment: 'Baikal database' }
   notify:
     - Start Postgres
 
@@ -161,6 +163,10 @@
 - name: Test for donetick line in pg_hba.conf
   shell: grep -c "donetick" /etc/postgresql/18/main/pg_hba.conf || true
   register: test_donetick
+
+- name: Test for baikal line in pg_hba.conf
+  shell: grep -c "baikal" /etc/postgresql/18/main/pg_hba.conf || true
+  register: test_baikal
 
 - name: Add lidarr main access to pg_hba.conf
   lineinfile:
@@ -247,6 +253,14 @@
     dest: /etc/postgresql/18/main/pg_hba.conf
     line: "host  donetick  donetick  {{ tf_donetick_ip }}/24  scram-sha-256"
   when: test_donetick.stdout == "0"
+  notify:
+    - Start Postgres
+
+- name: Add baikal access to pg_hba.conf
+  lineinfile:
+    dest: /etc/postgresql/18/main/pg_hba.conf
+    line: "host  baikal  baikal  {{ tf_baikal_ip }}/24  scram-sha-256"
+  when: test_baikal.stdout == "0"
   notify:
     - Start Postgres
 
@@ -337,3 +351,11 @@
     minute: "10"
     hour: "2"
     job: 'pg_dump -U postgres -F c donetick > /mnt/app_config/postgres/backups/donetick/donetick-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/donetick -name "donetick-*.dump" -mtime +7 -delete'
+
+- name: Create backup cron job for baikal database
+  cron:
+    user: postgres
+    name: backup baikal database
+    minute: "11"
+    hour: "2"
+    job: 'pg_dump -U postgres -F c baikal > /mnt/app_config/postgres/backups/baikal/baikal-$(date +\%Y\%m\%d).dump && find /mnt/app_config/postgres/backups/baikal -name "baikal-*.dump" -mtime +7 -delete'

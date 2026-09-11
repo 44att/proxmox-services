@@ -5,3 +5,13 @@ http:
       redirectScheme:
         scheme: https
         permanent: false
+    baikal-caldav:
+      redirectRegex:
+        regex: "^https://(.*)/.well-known/caldav"
+        replacement: "https://${1}/dav.php"
+        permanent: true
+    baikal-carddav:
+      redirectRegex:
+        regex: "^https://(.*)/.well-known/carddav"
+        replacement: "https://${1}/dav.php"
+        permanent: true
