@@ -30,6 +30,7 @@
       - python3-acoustid
       - python3-gi
       - python3-discogs-client
+      - python3-pillow
       - python3-pip
       - python3-pylast
       - python3-venv
